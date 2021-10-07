@@ -1,15 +1,22 @@
 <template>
-  <hello-world />
+    <v-app>
+    <v-main>
+      <Map/>
+    </v-main>
+  </v-app>
 </template>
 
 <script>
-import HelloWorld from "../components/HelloWorld";
+import Map from '../components/Map';
 
 export default {
   name: "Home",
 
   components: {
-    HelloWorld,
+    Map,
   },
+    data: () => ({
+    //
+  }),
 };
 </script>
