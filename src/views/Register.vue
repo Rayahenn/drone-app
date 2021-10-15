@@ -1,15 +1,19 @@
 <template>
-  <div>
+  <div class="auth-container">
     <div class="error" v-if="error">{{error.message}}</div>
-    <form @submit.prevent="pressed">
-      Register
-      <div class="email">
-        <input type="email" v-model="email" placeholder="email" />
+    <form @submit.prevent="pressed" class="auth-form">
+      <h2 class="auth-title">Register a new account</h2>
+      <div class="form-input">
+        <input type="email" v-model="email" placeholder="Email" />
       </div>
-      <div class="password">
-        <input type="password" v-model="password" placeholder="password" />
+      <div class="form-input">
+        <input type="password" v-model="password" placeholder="Password" />
       </div>
-      <button type="submit">Register</button>
+      <button class="btn" type="submit">
+        <span class="btn__text">
+          Register
+        </span>
+      </button>
     </form>
   </div>
 </template>
@@ -42,20 +46,26 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.error {
-  color: red;
-  font-size: 18px;
-}
-input {
-  width: 400px;
-  padding: 30px;
-  margin: 20px;
-  font-size: 21px;
-}
-button {
-  width: 400px;
-  height: 75px;
-  font-size: 100%;
+.auth {
+  &-container {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(0deg, rgba(2,0,36,1) 0%, rgba(9,9,121,1) 35%, rgba(108,165,242,1) 100%);
+    align-items: center;
+    justify-content: center;
+  }
+  &-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    .btn {
+      margin-top: 16px;
+    }
+  }
+  &-title {
+    margin-bottom: 16px;
+  }
 }
 
 </style>

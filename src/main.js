@@ -12,6 +12,10 @@ import axios from "axios";
 import * as firebase from "@firebase/app";
 import { getAuth, createUserWithEmailAndPassword } from "@firebase/auth";
 import "@firebase/firestore";
+import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
+import { firestorePlugin } from 'vuefire'
 
 Vue.config.productionTip = false;
 
@@ -29,6 +33,7 @@ Vue.component("l-marker", LMarker);
 Vue.component("l-popup", LPopup);
 Vue.use(VueGeolocation);
 Vue.use(firebase)
+Vue.use(firestorePlugin)
 
 console.log(firebase)
 
@@ -45,7 +50,14 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
+const db = getFirestore();
+// console.log(db)
 let app;
+
+// const querySnapshot = await getDocs(collection(db, "coordinates"));
+// querySnapshot.forEach((doc) => {
+//   console.log('ok');
+// });
 
 Vue.use(VueGoogleMaps, {
   load: {

@@ -13,6 +13,12 @@
 </template>
 
 <script>
+  import { initializeApp } from "firebase/app";
+  import * as firebase from "@firebase/app";
+  import { getFirestore, collection, doc, setDoc, Firestore, getDocs } from "firebase/firestore";
+  import axios from "axios";
+  import "@firebase/firestore";
+
   export default {
     name: 'Map',
     data () {
@@ -38,15 +44,47 @@
 
         })
         .then(coordinates => {
-            console.log(coordinates)
-            console.log(this.coordinates)
+            // console.log(coordinates)
+            // console.log(this.coordinates)
             this.coordinates = coordinates
         })
         .catch(error => alert(error))
+
+        const db = getFirestore();
+        // const coordinates = collection(db, 'coordinates')
+        setTimeout(function() {
+
+        },2000)
+        async function getCollections () {
+        const response2 = await getDocs(collection(db, 'coordinates'))
+        console.log(response2)
+        }
+        getCollections();
+
+        // const response = doc(db, 'coordinates');
+        // const getResponse = await getDoc(response)
+        // console.log(response)
+        // console.log(getResponse)
+        // console.log(coordinates)
+          // axios.get('https://firestore.googleapis.com/v1/projects/drone-app-1cd2e/databases/(default)/documents/coordinates')
+          // .then((response) => {
+          //   console.log(response.data);
+          //   console.log(response.status);
+          //   console.log(response.statusText);
+          //   console.log(response.headers);
+          //   console.log(response.config);
+          //   return response
+          // });
     },
     methods: {
       addMarker(event) {
         this.markers.push(event.latlng);
+      }
+    },
+    computed: {
+      databaseResponse: {
+        get() {
+        }
       }
     }
   }
