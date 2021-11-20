@@ -35,9 +35,6 @@ Vue.use(VueGeolocation);
 Vue.use(firebase)
 Vue.use(firestorePlugin)
 
-console.log(firebase)
-
-
 const firebaseConfig = {
   apiKey: "AIzaSyBPmJAyB6gypZSOc50SdX13uiCKSYVu-xE",
   authDomain: "drone-app-1cd2e.firebaseapp.com",
@@ -51,7 +48,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 const db = getFirestore();
-// console.log(db)
+
 let app;
 
 // const querySnapshot = await getDocs(collection(db, "coordinates"));

@@ -15,7 +15,7 @@
 <script>
   import { initializeApp } from "firebase/app";
   import * as firebase from "@firebase/app";
-  import { getFirestore, collection, doc, setDoc, Firestore, getDocs } from "firebase/firestore";
+  import { getFirestore, collection, doc, setDoc, Firestore, getDocs, firestore } from "firebase/firestore";
   import axios from "axios";
   import "@firebase/firestore";
 
@@ -28,9 +28,9 @@
             '&copy; <a target="_blank" href="http://osm.org/copyright">OpenStreetMap</a> contributors',
         zoom: 8,
         markers: [
-          [47.313220, -1.319482],
-          [50.0254674, 21.9795859],
-          [50.0554674, 21.9755859]
+          // [47.313220, -1.319482],
+          // [50.0254674, 50.0254674],
+          // [50.0554674, 21.9755859]
         ],
         coordinates: {
             lat: 0,
@@ -40,45 +40,68 @@
       };
     },
     created() {
-        this.$getLocation({
-
-        })
+      
+      // console.log(this.markers)
+        this.$getLocation({})
         .then(coordinates => {
-            // console.log(coordinates)
-            // console.log(this.coordinates)
             this.coordinates = coordinates
         })
         .catch(error => alert(error))
 
-        const db = getFirestore();
-        // const coordinates = collection(db, 'coordinates')
-        setTimeout(function() {
 
-        },2000)
-        async function getCollections () {
-        const response2 = await getDocs(collection(db, 'coordinates'))
-        console.log(response2)
-        }
-        getCollections();
+        
+          axios.get('https://firestore.googleapis.com/v1/projects/drone-app-1cd2e/databases/(default)/documents/coordinates')
+          .then((response) => {
+            // console.log(response)
+            console.log(response.data)
+            let firestoreCoordinates = response.data.documents[0].fields;
+            for(let item in firestoreCoordinates) {
+              let coordinatesArr = []
+                firestoreCoordinates[item].arrayValue.values.map(singleCoordinate => {
+                  coordinatesArr.push(singleCoordinate.doubleValue)
+                })
+              this.markers.push(coordinatesArr)
+            }
 
-        // const response = doc(db, 'coordinates');
-        // const getResponse = await getDoc(response)
-        // console.log(response)
-        // console.log(getResponse)
-        // console.log(coordinates)
-          // axios.get('https://firestore.googleapis.com/v1/projects/drone-app-1cd2e/databases/(default)/documents/coordinates')
-          // .then((response) => {
-          //   console.log(response.data);
-          //   console.log(response.status);
-          //   console.log(response.statusText);
-          //   console.log(response.headers);
-          //   console.log(response.config);
-          //   return response
-          // });
+            return response
+          });
     },
+
     methods: {
-      addMarker(event) {
-        this.markers.push(event.latlng);
+      async addMarker(event) {
+        const db = getFirestore();
+        // axios.get('https://firestore.googleapis.com/v1/projects/drone-app-1cd2e/databases/(default)/documents/coordinates')
+        // .then((response) => {
+        //   console.log(response.data)
+        // });
+        console.log(firebase);
+        console.log(collection)
+        console.log(getFirestore)
+
+        await setDoc(doc(db, 'coordinates', 'test'), {
+          3: 'test'
+        })
+
+        axios.post('https://firestore.googleapis.com/v1/projects/drone-app-1cd2e/databases/(default)/documents/coordinates', {
+          fields: {
+            3: {
+              arrayValue: {
+                values: {
+                  doubleValue: 'test'
+                }
+              }
+            },
+          }
+        }).then (response => {
+          console.log('done!')
+        },
+        (error) => {
+          console.log(error)
+        }
+        )
+
+          //Add Marker
+        // this.markers.push(event.latlng);
       }
     },
     computed: {
