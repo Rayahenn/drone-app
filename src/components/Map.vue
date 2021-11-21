@@ -15,7 +15,7 @@
 <script>
   import { initializeApp } from "firebase/app";
   import * as firebase from "@firebase/app";
-  import { getFirestore, collection, doc, setDoc, Firestore, getDocs, firestore } from "firebase/firestore";
+  import { getFirestore, collection, doc, addDoc, setDoc, Firestore, getDocs, firestore, updateDoc, getDoc } from "firebase/firestore";
   import axios from "axios";
   import "@firebase/firestore";
 
@@ -53,63 +53,55 @@
           axios.get('https://firestore.googleapis.com/v1/projects/drone-app-1cd2e/databases/(default)/documents/coordinates')
           .then((response) => {
             // console.log(response)
-            console.log(response.data)
-            let firestoreCoordinates = response.data.documents[0].fields;
-            for(let item in firestoreCoordinates) {
+            // console.log(response.data)
+            let firestoreCoordinates = response.data.documents
+            // console.log(typeof firestoreCoordinates)
+            firestoreCoordinates.map(item => {
               let coordinatesArr = []
-                firestoreCoordinates[item].arrayValue.values.map(singleCoordinate => {
-                  coordinatesArr.push(singleCoordinate.doubleValue)
-                })
+              for(let coordinate in item.fields) {
+                coordinatesArr.push(item.fields[coordinate].doubleValue)
+              }
               this.markers.push(coordinatesArr)
-            }
+            })
+            // for(let item in firestoreCoordinates) {
+            //   let coordinatesArr = []
+            //   console.log(item)
+
+            //     // firestoreCoordinates[item].arrayValue.values.map(singleCoordinate => {
+            //     //   coordinatesArr.push(singleCoordinate.doubleValue)
+            //     // })
+              
+            // }
 
             return response
           });
     },
 
     methods: {
+      refreshMarkers: function() {
+          axios.get('https://firestore.googleapis.com/v1/projects/drone-app-1cd2e/databases/(default)/documents/coordinates')
+          .then((response) => {
+            this.markers = [];
+            let firestoreCoordinates = response.data.documents
+            firestoreCoordinates.map(item => {
+              let coordinatesArr = []
+              for(let coordinate in item.fields) {
+                coordinatesArr.push(item.fields[coordinate].doubleValue)
+              }
+              this.markers.push(coordinatesArr)
+            })
+          });
+      },
       async addMarker(event) {
         const db = getFirestore();
-        // axios.get('https://firestore.googleapis.com/v1/projects/drone-app-1cd2e/databases/(default)/documents/coordinates')
-        // .then((response) => {
-        //   console.log(response.data)
-        // });
-        console.log(firebase);
-        console.log(collection)
-        console.log(getFirestore)
 
-        await setDoc(doc(db, 'coordinates', 'test'), {
-          3: 'test'
+        await addDoc(collection(db, 'coordinates'), {
+          0: event.latlng.lat,
+          1: event.latlng.lng
         })
-
-        axios.post('https://firestore.googleapis.com/v1/projects/drone-app-1cd2e/databases/(default)/documents/coordinates', {
-          fields: {
-            3: {
-              arrayValue: {
-                values: {
-                  doubleValue: 'test'
-                }
-              }
-            },
-          }
-        }).then (response => {
-          console.log('done!')
-        },
-        (error) => {
-          console.log(error)
-        }
-        )
-
-          //Add Marker
-        // this.markers.push(event.latlng);
+        this.refreshMarkers();
       }
     },
-    computed: {
-      databaseResponse: {
-        get() {
-        }
-      }
-    }
   }
 </script>
 
