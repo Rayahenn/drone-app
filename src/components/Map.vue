@@ -9,38 +9,42 @@
         <l-popup>TEST</l-popup>
       </l-marker>
     </l-map>
+    <Modal :isModalVisible="isModalVisible"/>
   </v-container>
 </template>
 
 <script>
-  import { initializeApp } from "firebase/app";
-  import * as firebase from "@firebase/app";
-  import { getFirestore, collection, doc, addDoc, setDoc, Firestore, getDocs, firestore, updateDoc, getDoc } from "firebase/firestore";
+  import { getFirestore, collection, addDoc} from "firebase/firestore";
   import axios from "axios";
   import "@firebase/firestore";
+  import Modal from './Modal'
 
   export default {
     name: 'Map',
+    components: {
+      Modal
+    },
     data () {
       return {
         url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
         attribution:
             '&copy; <a target="_blank" href="http://osm.org/copyright">OpenStreetMap</a> contributors',
         zoom: 8,
-        markers: [
-          // [47.313220, -1.319482],
-          // [50.0254674, 50.0254674],
-          // [50.0554674, 21.9755859]
-        ],
+        markers: [],
         coordinates: {
             lat: 0,
             lng: 0
         },
         markerCoordinates: [this.coordinates, this.coordinates],
+        isModalVisible: false,
+        
       };
     },
+    updated() {
+      this.isModalVisible = this.$store.getters['getMarkerModalVisible']()
+    },
     created() {
-      
+      console.log(this.$store)
       // console.log(this.markers)
         this.$getLocation({})
         .then(coordinates => {
@@ -52,10 +56,7 @@
         
           axios.get('https://firestore.googleapis.com/v1/projects/drone-app-1cd2e/databases/(default)/documents/coordinates')
           .then((response) => {
-            // console.log(response)
-            // console.log(response.data)
             let firestoreCoordinates = response.data.documents
-            // console.log(typeof firestoreCoordinates)
             firestoreCoordinates.map(item => {
               let coordinatesArr = []
               for(let coordinate in item.fields) {
@@ -63,15 +64,6 @@
               }
               this.markers.push(coordinatesArr)
             })
-            // for(let item in firestoreCoordinates) {
-            //   let coordinatesArr = []
-            //   console.log(item)
-
-            //     // firestoreCoordinates[item].arrayValue.values.map(singleCoordinate => {
-            //     //   coordinatesArr.push(singleCoordinate.doubleValue)
-            //     // })
-              
-            // }
 
             return response
           });
@@ -93,6 +85,8 @@
           });
       },
       async addMarker(event) {
+        this.$store.commit('setMarkerModalVisible', true);
+        this.$store.getters['getMarkerModalVisible']()
         const db = getFirestore();
 
         await addDoc(collection(db, 'coordinates'), {
@@ -101,6 +95,13 @@
         })
         this.refreshMarkers();
       }
+    },
+    computed: {
+      // isModalVisible: {
+      //   get() {
+      //     return this.$store.getters['getMarkerModalVisible']()
+      //   }
+      // }
     },
   }
 </script>
