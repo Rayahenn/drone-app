@@ -1,7 +1,7 @@
 <template>
   <div class="auth-container">
       <div class="error" v-if="error">{{error.message}}</div>
-    <form action="#" @submit.prevent="submit" class="auth-form">
+    <!-- <form action="#" @submit.prevent="submit" class="auth-form">
         <h2 class="auth-title">Login to existing account</h2>
         <div class="form-input">
             <input type="email" v-model="email" placeholder="Email" />
@@ -14,7 +14,54 @@
           Login
         </span>
       </button>
-    </form>
+    </form> -->
+    <v-form
+      ref="form"
+      v-model="valid"
+      lazy-validation
+    >
+      <v-container>
+        <v-row>
+          <v-col
+            cols="12"
+            md="12"
+          >
+            <v-text-field
+              v-model="email"
+              :rules="emailRules"
+              label="Email"
+              required
+            ></v-text-field>
+          </v-col>
+          <v-col
+            cols="12"
+            md="12"
+          >
+          <v-text-field
+            v-model="password"
+            :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+            :rules="[passwordRules.required, passwordRules.min]"
+            :type="showPassword ? 'text' : 'password'"
+            name="input-10-1"
+            label="Normal with hint text"
+            hint="At least 8 characters"
+            counter
+            @click:append="showPassword = !showPassword"
+          ></v-text-field>
+          </v-col>
+        </v-row>
+      </v-container>
+      <v-btn
+        color="primary"
+        elevation="3"
+        rounded
+        text
+        x-large
+        @click="validate"
+      >
+      Login
+      </v-btn>
+    </v-form>
   </div>
 </template>
 
@@ -25,11 +72,23 @@ require('firebase/auth');
 
 
 export default {
+  name: "Login",
   data() {
     return {
-    email: "",
-    password: "",
-    error: ""
+      email: "",
+      password: "",
+      error: "",
+      valid: true,
+      emailRules: [
+        v => !!v || 'E-mail is required',
+        v => /.+@.+/.test(v) || 'E-mail must be valid',
+      ],
+      passwordRules: {
+        required: value => !!value || 'Required.',
+        min: v => v.length >= 8 || 'Min 8 characters',
+        emailMatch: () => (`The email and password you entered don't match`),
+      },
+      showPassword: false,
     };
   },
   methods: {
@@ -44,7 +103,12 @@ export default {
         .catch(error => {
           console.log(error)
         });
-    }
+    },
+    validate () {
+      console.log('tuu')
+      console.log(this.$refs.form.validate())
+      this.$refs.form.validate()
+    },
   }
 };
 </script>
@@ -55,7 +119,7 @@ export default {
     display: flex;
     height: 100%;
     width: 100%;
-    background: linear-gradient(0deg, rgba(2,0,36,1) 0%, rgba(9,9,121,1) 35%, rgba(108,165,242,1) 100%);
+    background: #fff;
     align-items: center;
     justify-content: center;
   }

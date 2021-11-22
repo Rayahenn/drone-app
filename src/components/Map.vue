@@ -2,14 +2,15 @@
   <v-container class="main-container">
     <l-map class="map" :zoom="zoom" :center="coordinates" @click="addMarker">
       <l-tile-layer :url="url" :attribution="attribution"></l-tile-layer>
-      <l-marker 
+      <l-marker
+      v-if="markers.length > 0"
       v-for="(marker, index) in markers"
       :key="'marker-' + index"
       :lat-lng="marker">
         <l-popup>TEST</l-popup>
       </l-marker>
     </l-map>
-    <Modal :isModalVisible="isModalVisible"/>
+    <!-- <Modal :isModalVisible="isModalVisible"/> -->
   </v-container>
 </template>
 
@@ -36,12 +37,11 @@
             lng: 0
         },
         markerCoordinates: [this.coordinates, this.coordinates],
-        isModalVisible: false,
         
       };
     },
     updated() {
-      this.isModalVisible = this.$store.getters['getMarkerModalVisible']()
+      // this.isModalVisible = this.$store.getters['getMarkerModalVisible']()
     },
     created() {
       console.log(this.$store)
@@ -73,6 +73,8 @@
       refreshMarkers: function() {
           axios.get('https://firestore.googleapis.com/v1/projects/drone-app-1cd2e/databases/(default)/documents/coordinates')
           .then((response) => {
+            console.log(response.data)
+            console.log(this.markers)
             this.markers = [];
             let firestoreCoordinates = response.data.documents
             firestoreCoordinates.map(item => {
