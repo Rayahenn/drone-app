@@ -28,6 +28,10 @@ export default {
 </script>
 
 <style lang="scss">
+@import './assets/variables.scss';
+.v-application--wrap {
+  z-index: 5;
+}
 .error {
   color: red;
   font-size: 18px;
@@ -77,5 +81,6 @@ export default {
   &:hover {
     background-color: rgb(11, 110, 240)
   }
+
 }
 </style>

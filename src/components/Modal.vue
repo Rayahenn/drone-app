@@ -1,11 +1,77 @@
 <script>
+  import { getFirestore, collection, addDoc} from "firebase/firestore";
+  import axios from "axios";
+  import "@firebase/firestore";
+
   export default {
     name: 'Modal',
     data () {
       return {
-        dialog: false,
+        // isModalVisible: false,
+        isSpinnerVisible: false,
+        isModalRendered: false,
+        droneModels: [],
+        categories: [],
+        selectedDrone: '',
+        selectedCategories: ['Spring'],
+        loader: null,
+        isButtonLoading: false,
+        valid: true,
       }
     },
+    computed: {
+      isModalVisible: {
+        get() {
+          if(!this.isModalRendered) {
+            axios.get('https://firestore.googleapis.com/v1/projects/drone-app-1cd2e/databases/(default)/documents/drones')
+            .then((response) => {
+              for(const [key,value] of Object.entries(response.data.documents[0].fields)) {
+                this.droneModels.push(value.stringValue)
+              }
+            });
+
+            axios.get('https://firestore.googleapis.com/v1/projects/drone-app-1cd2e/databases/(default)/documents/categories')
+            .then((response) => {
+              for(const [key,value] of Object.entries(response.data.documents[0].fields)) {
+                this.categories.push(value.stringValue)
+              }
+            });
+
+            this.isModalRendered = true;
+          }
+          return this.$store.getters['getMarkerModalVisible']()
+        }
+      }
+    },
+    watch: {
+      loader () {
+        const l = this.loader
+        this[l] = !this[l]
+
+        setTimeout(() => (this[l] = false), 3000)
+
+        this.loader = null
+      },
+    },
+    created() {
+      this.$store.commit('setMarkerModalVisible', false);
+    },
+    methods: {
+      closeModal() {
+        this.$store.commit('setMarkerModalVisible', false);
+      },
+      validate () {
+        this.$refs.form.validate()
+      },
+      updateSelectedCategories(category) {
+          if(this.selectedCategories.includes(category)) {
+            this.selectedCategories.splice(this.selectedCategories.indexOf(category), 1)
+          }
+          else {
+            this.selectedCategories.push(category)
+          }
+      }
+    }
   }
 </script>
 
@@ -14,37 +80,104 @@
     <v-dialog
       v-model="isModalVisible"
       width="500"
+      persistent
     >
-      <template v-slot:activator="{ on, attrs }">
-        <v-btn
-          color="red lighten-2"
-          dark
-          v-bind="attrs"
-          v-on="on"
-        >
-          Click Me
-        </v-btn>
-      </template>
-
       <v-card>
         <v-card-title class="text-h5 grey lighten-2">
-          Privacy Policy
+          Add New Marker
         </v-card-title>
 
-        <v-card-text>
+        <!-- <v-card-text>
           Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-        </v-card-text>
+        </v-card-text> -->
+
+
+        <v-form
+          ref="form"
+          v-model="valid"
+          lazy-validation
+        >
+          <v-container>
+            <v-row>
+              <v-col
+                cols="12"
+                md="12"
+              >
+                <h4>Select drone type</h4>
+                <v-select
+                  v-model="selectedDrone"
+                  :items="droneModels"
+                  item-text="1"
+                  :rules="[v => !!v || 'Item is required']"
+                  label="Drone"
+                  required
+                ></v-select>
+              </v-col>
+              <v-col 
+                cols="12"
+                md="12">
+                <h4>Select categories</h4>
+              </v-col>
+              <v-col
+                cols="4"
+                md="4"
+                v-for="(category, index) in categories"
+                :key=index
+              >
+                <v-checkbox
+                  :label="category"
+                  color="primary"
+                  value="primary"
+                  hide-details
+                  @click="updateSelectedCategories(category)"
+                ></v-checkbox>
+              </v-col>
+
+              
+              <v-col
+                cols="12"
+                md="12">
+                  <v-file-input
+                    label="Upload Image"
+                    filled
+                    prepend-icon="mdi-camera"
+                  ></v-file-input>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-form>
 
         <v-divider></v-divider>
 
         <v-card-actions>
+          <v-btn
+            :loading="isButtonLoading"
+            color="primary"
+            class="ma-2 white--text"
+            elevation="2"
+            @click="closeModal()"
+          >
+            Add Marker
+          </v-btn>
+          <!-- <v-btn
+            color="primary"
+            elevation="2"
+            @click="closeModal()"
+          >
+          <span>Add marker</span>
+          <v-progress-circular
+            indeterminate
+            color="primary"
+          ></v-progress-circular>
+          </v-btn> -->
           <v-spacer></v-spacer>
           <v-btn
-            color="primary"
-            text
-            @click="isModalVisible = false"
+            color="error"
+            elevation="2"
+            @click="closeModal()"
+            class="btn-danger"
           >
-            I accept
+          <span>Close</span>
           </v-btn>
         </v-card-actions>
       </v-card>

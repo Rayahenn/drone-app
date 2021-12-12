@@ -1,25 +1,12 @@
 <template>
   <div class="auth-container">
-      <div class="error" v-if="error">{{error.message}}</div>
-    <!-- <form action="#" @submit.prevent="submit" class="auth-form">
-        <h2 class="auth-title">Login to existing account</h2>
-        <div class="form-input">
-            <input type="email" v-model="email" placeholder="Email" />
-        </div>
-        <div class="form-input">
-            <input type="password" v-model="password" placeholder="Password" />
-        </div>
-      <button class="btn" type="submit">
-        <span class="btn__text">
-          Login
-        </span>
-      </button>
-    </form> -->
+    <div class="error" v-if="error">{{error.message}}</div>
     <v-form
       ref="form"
       v-model="valid"
       lazy-validation
     >
+      <h2 class="auth-title">Login</h2>
       <v-container>
         <v-row>
           <v-col
@@ -43,7 +30,7 @@
             :rules="[passwordRules.required, passwordRules.min]"
             :type="showPassword ? 'text' : 'password'"
             name="input-10-1"
-            label="Normal with hint text"
+            label="Password"
             hint="At least 8 characters"
             counter
             @click:append="showPassword = !showPassword"
@@ -93,21 +80,19 @@ export default {
   },
   methods: {
     submit() {
-
-      const auth = getAuth();
-      signInWithEmailAndPassword(auth, this.email, this.password)
-      .then((userCredential) => {
+    },
+    validate () {
+      this.$refs.form.validate()
+      if(this.$refs.form.validate()) {
+        const auth = getAuth();
+        signInWithEmailAndPassword(auth, this.email, this.password)
+        .then((userCredential) => {
           console.log(userCredential)
-        //   this.$router.replace({ name: "secret" });
         })
         .catch(error => {
           console.log(error)
         });
-    },
-    validate () {
-      console.log('tuu')
-      console.log(this.$refs.form.validate())
-      this.$refs.form.validate()
+      }
     },
   }
 };

@@ -10,7 +10,7 @@
         <l-popup>TEST</l-popup>
       </l-marker>
     </l-map>
-    <!-- <Modal :isModalVisible="isModalVisible"/> -->
+    <Modal />
   </v-container>
 </template>
 
@@ -37,7 +37,8 @@
             lng: 0
         },
         markerCoordinates: [this.coordinates, this.coordinates],
-        
+        isModalVisible: false,
+        droneModels: []
       };
     },
     updated() {
@@ -73,8 +74,6 @@
       refreshMarkers: function() {
           axios.get('https://firestore.googleapis.com/v1/projects/drone-app-1cd2e/databases/(default)/documents/coordinates')
           .then((response) => {
-            console.log(response.data)
-            console.log(this.markers)
             this.markers = [];
             let firestoreCoordinates = response.data.documents
             firestoreCoordinates.map(item => {
@@ -87,23 +86,31 @@
           });
       },
       async addMarker(event) {
+        this.$store.commit('setMarkerInfo', {
+          lat: event.latlng.lat,
+          lng: event.latlng.lng,
+        });
+        this.isModalVisible = true;
         this.$store.commit('setMarkerModalVisible', true);
         this.$store.getters['getMarkerModalVisible']()
+        console.log(this.$store.getters['getMarkerModalVisible']())
         const db = getFirestore();
 
-        await addDoc(collection(db, 'coordinates'), {
-          0: event.latlng.lat,
-          1: event.latlng.lng
-        })
+        // await addDoc(collection(db, 'coordinates'), {
+        //   0: event.latlng.lat,
+        //   1: event.latlng.lng
+        // })
         this.refreshMarkers();
       }
     },
     computed: {
-      // isModalVisible: {
-      //   get() {
-      //     return this.$store.getters['getMarkerModalVisible']()
-      //   }
-      // }
+      isModalRendered: {
+        get() {
+          // if(drone
+          console.log(this.droneModels)
+          // return this.$store.getters['getMarkerModalVisible']()
+        }
+      }
     },
   }
 </script>
