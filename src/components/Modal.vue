@@ -1,7 +1,9 @@
 <script>
-  import { getFirestore, collection, addDoc} from "firebase/firestore";
+  import { getFirestore, collection, addDoc, getDa} from "firebase/firestore";
   import axios from "axios";
-  import "@firebase/firestore";
+  // import { getDatabase, } from "@firebase/firestore";
+  import { getDatabase} from '@firebase/database'
+  import { getStorage, ref, uploadBytes } from 'firebase/storage';
 
   export default {
     name: 'Modal',
@@ -17,6 +19,9 @@
         loader: null,
         isButtonLoading: false,
         valid: true,
+        picture: null,
+        imageData: null,
+        uploadValue: 0
       }
     },
     computed: {
@@ -70,6 +75,23 @@
           else {
             this.selectedCategories.push(category)
           }
+      },
+      async onUpload(file) {
+        //TODO save photo with coords
+        this.picture = null;
+        const storage = getStorage();
+        const imagesRef = ref(storage, 'images/' + file.name)
+        this.picture = null;
+        uploadBytes(imagesRef, file).then((snapshot) => {
+          console.log('file uploaded')
+        })
+        // const storageRef = firebase.storage
+      },
+      previewImage(event) {
+        this.uploadValue = 0;
+        this.picture = null;
+        this.imageData = event.target
+        this.onUpload(event)
       }
     }
   }
@@ -141,6 +163,7 @@
                     label="Upload Image"
                     filled
                     prepend-icon="mdi-camera"
+                    @change="previewImage"
                   ></v-file-input>
               </v-col>
             </v-row>
