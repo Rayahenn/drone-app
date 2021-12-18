@@ -4,6 +4,7 @@
   // import { getDatabase, } from "@firebase/firestore";
   import { getDatabase} from '@firebase/database'
   import { getStorage, ref, uploadBytes } from 'firebase/storage';
+  import "@firebase/firestore";
 
   export default {
     name: 'Modal',
@@ -23,6 +24,10 @@
         imageData: null,
         uploadValue: 0
       }
+    },
+    props: {
+      lat: null,
+      lng: null,
     },
     computed: {
       isModalVisible: {
@@ -45,6 +50,12 @@
             this.isModalRendered = true;
           }
           return this.$store.getters['getMarkerModalVisible']()
+        }
+      },
+      appLocalStorage: {
+        get() {
+          console.log(localStorage)
+          return localStorage
         }
       }
     },
@@ -85,13 +96,52 @@
         uploadBytes(imagesRef, file).then((snapshot) => {
           console.log('file uploaded')
         })
-        // const storageRef = firebase.storage
       },
       previewImage(event) {
         this.uploadValue = 0;
         this.picture = null;
-        this.imageData = event.target
+        this.imageData = event
+        console.log(event)
+        console.log(this.imageData)
         this.onUpload(event)
+      },
+        refreshMarkers: function() {
+          axios.get('https://firestore.googleapis.com/v1/projects/drone-app-1cd2e/databases/(default)/documents/coordinates')
+          .then((response) => {
+            this.markers = [];
+            let firestoreCoordinates = response.data.documents
+            firestoreCoordinates.map(item => {
+              let coordinatesArr = []
+              for(let coordinate in item.fields) {
+                coordinatesArr.push(item.fields[coordinate].doubleValue)
+              }
+              this.markers.push(coordinatesArr)
+            })
+          });
+      },
+      async addMarker(event) {
+        console.log(this.$props)
+        this.$store.commit('setMarkerInfo', {
+          lat: this.$props.lat,
+          lng: this.$props.lng,
+        });
+        // this.isModalVisible = true;
+        // this.$store.commit('setMarkerModalVisible', true);
+        // this.$store.getters['getMarkerModalVisible']()
+        // console.log(this.$store.getters['getMarkerModalVisible']())
+        const db = getFirestore();
+        console.log(localStorage)
+
+        await addDoc(collection(db, 'coordinates'), {
+          0: this.$props.lat,
+          1: this.$props.lng,
+          2: this.imageData.name,
+          3: localStorage.userId,
+          4: localStorage.userEmail,
+
+        })
+        this.closeModal()
+        this.refreshMarkers();
       }
     }
   }
@@ -104,16 +154,10 @@
       width="500"
       persistent
     >
-      <v-card>
+      <v-card v-if="appLocalStorage.isUserLogged">
         <v-card-title class="text-h5 grey lighten-2">
           Add New Marker
         </v-card-title>
-
-        <!-- <v-card-text>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-        </v-card-text> -->
-
-
         <v-form
           ref="form"
           v-model="valid"
@@ -178,21 +222,38 @@
             color="primary"
             class="ma-2 white--text"
             elevation="2"
-            @click="closeModal()"
+            @click="addMarker()"
           >
             Add Marker
           </v-btn>
-          <!-- <v-btn
-            color="primary"
+          <v-spacer></v-spacer>
+          <v-btn
+            color="error"
             elevation="2"
             @click="closeModal()"
+            class="btn-danger"
           >
-          <span>Add marker</span>
-          <v-progress-circular
-            indeterminate
-            color="primary"
-          ></v-progress-circular>
-          </v-btn> -->
+          <span>Close</span>
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+      <v-card v-else>
+        <v-card-title class="text-h5 grey lighten-2">
+          Add New Marker
+        </v-card-title>
+        <v-container>
+          <v-row>
+            <v-col
+              cols="12"
+              md="12"
+            >
+              <h4>You must be logged in</h4>
+            </v-col>
+          </v-row>
+        </v-container>
+        <v-divider></v-divider>
+
+        <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
             color="error"

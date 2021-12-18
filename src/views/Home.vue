@@ -18,5 +18,12 @@ export default {
     data: () => ({
     //
   }),
+  computed: {
+    userInfo: {
+      get() {
+        return this.$store.getters['getUserInfo']()
+      }
+    }
+  }
 };
 </script>

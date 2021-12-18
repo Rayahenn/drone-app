@@ -16,6 +16,8 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { collection, getDocs } from "firebase/firestore";
 import { firestorePlugin } from 'vuefire'
+import VueSessionStorage from "vue-sessionstorage";
+Vue.use(VueSessionStorage);
 
 Vue.config.productionTip = false;
 

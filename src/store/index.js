@@ -13,6 +13,12 @@ export default new Vuex.Store({
       description: '',
       drone: '',
       photo: '',
+    },
+    userInfo: {
+      isLogged: false,
+      id: null,
+      email: null,
+      lastLogin: null,
     }
   },
   mutations: {
@@ -20,6 +26,7 @@ export default new Vuex.Store({
       state.isModalVisible = val;
     },
     setMarkerInfo (state, val) {
+      // conosl
       if(val.lat) {
         state.newMarkerInfo.lat = val.lat;
       }
@@ -38,6 +45,23 @@ export default new Vuex.Store({
       if(val.photo) {
         state.newMarkerInfo.vaphotol = val.photo;
       }
+    },
+    setUserInfo (state, val) {
+      console.log(val)
+      if(val) {
+        state.userInfo.isLogged = true
+        state.userInfo.email = val.user.email
+        state.userInfo.id = val.user.uid
+        state.userInfo.lastLogin = val.user.metadata.lastSignInTime
+        localStorage.userInfo = {} 
+        console.log(localStorage)
+        localStorage.isUserLogged = true
+        localStorage.userEmail = val.user.email
+        localStorage.userId = val.user.uid
+        localStorage.userLastLogin = val.user.metadata.lastSignInTime 
+        // localStorage.userInfo = state.userInfo
+        console.log(localStorage)
+      }
     }
   },
   actions: {},
@@ -45,6 +69,10 @@ export default new Vuex.Store({
   getters: {
     getMarkerModalVisible: (state) => function() {
       return state.isModalVisible;
+    },
+    getUserInfo: (state) => function() {
+      console.log(state)
+      return state.userInfo;
     }
   },
 });
