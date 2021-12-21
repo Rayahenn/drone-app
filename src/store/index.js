@@ -5,7 +5,8 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    isModalVisible: false,
+    isMarkerModalVisible: false,
+    isLogoutModalVisible: false,
     newMarkerInfo: {
       lat: 0,
       lng: 0,
@@ -19,14 +20,32 @@ export default new Vuex.Store({
       id: null,
       email: null,
       lastLogin: null,
-    }
+    },
+    appLocalStorage: localStorage,
+    isAlertVisible: false,
+    markers: [],
+    markerFullInfo: [],
   },
   mutations: {
     setMarkerModalVisible (state, val) {
-      state.isModalVisible = val;
+      state.isMarkerModalVisible = val;
+    },
+    setLogoutModalVisible (state, val) {
+      state.isLogoutModalVisible = val;
+    },
+    setAppLocalStorage (state, val) {
+      state.appLocalStorage = val;
+    },
+    setAlertVisible (state, val) {
+      state.isAlertVisible = val;
+    },
+    setMarkers (state, val) {
+      state.markers = val;
+    },
+    setMarkerFullInfo (state, val) {
+      state.markerFullInfo = val;
     },
     setMarkerInfo (state, val) {
-      // conosl
       if(val.lat) {
         state.newMarkerInfo.lat = val.lat;
       }
@@ -47,20 +66,16 @@ export default new Vuex.Store({
       }
     },
     setUserInfo (state, val) {
-      console.log(val)
       if(val) {
         state.userInfo.isLogged = true
         state.userInfo.email = val.user.email
         state.userInfo.id = val.user.uid
         state.userInfo.lastLogin = val.user.metadata.lastSignInTime
         localStorage.userInfo = {} 
-        console.log(localStorage)
         localStorage.isUserLogged = true
         localStorage.userEmail = val.user.email
         localStorage.userId = val.user.uid
         localStorage.userLastLogin = val.user.metadata.lastSignInTime 
-        // localStorage.userInfo = state.userInfo
-        console.log(localStorage)
       }
     }
   },
@@ -68,11 +83,25 @@ export default new Vuex.Store({
   modules: {},
   getters: {
     getMarkerModalVisible: (state) => function() {
-      return state.isModalVisible;
+      return state.isMarkerModalVisible;
+    },
+    getLogoutModalVisible: (state) => function() {
+      return state.isLogoutModalVisible;
     },
     getUserInfo: (state) => function() {
-      console.log(state)
       return state.userInfo;
+    },
+    getAppLocalStorage: (state) => function() {
+      return state.appLocalStorage
+    },
+    getAlertVisible: (state) => function() {
+      return state.isAlertVisible
+    },
+    getMarkers: (state) => function() {
+      return state.markers
+    },
+    getMarkersFullInfo: (state) => function() {
+      return state.markerFullInfo
     }
   },
 });

@@ -106,13 +106,20 @@ export default {
     submit() {
     },
     validate () {
+      let self = this;
       this.$refs.form.validate()
       if(this.$refs.form.validate()) {
         const auth = getAuth();
         signInWithEmailAndPassword(auth, this.email, this.password)
         .then((userCredential) => {
           this.$store.commit('setUserInfo', userCredential);
+          this.$store.commit('setAppLocalStorage', localStorage);
+          console.log(localStorage)
           this.$router.push('/')
+          this.$store.commit('setAlertVisible', true);
+          setTimeout(function() {
+            self.$store.commit('setAlertVisible', false);
+          }, 5000)
         })
         .catch(error => {
           console.log(error)
@@ -132,7 +139,7 @@ export default {
     },
     appLocalStorage: {
       get() {
-        return localStorage
+        return this.$store.getters['getAppLocalStorage']()
       }
     }
   }
@@ -145,7 +152,7 @@ export default {
     display: flex;
     height: 100%;
     width: 100%;
-    background: #fff;
+    // background-image: $brand-primary-gradient;
     align-items: center;
     justify-content: center;
   }

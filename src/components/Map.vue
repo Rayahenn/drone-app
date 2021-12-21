@@ -10,13 +10,15 @@
         <l-popup>TEST</l-popup>
       </l-marker>
     </l-map>
-    <Modal :lat="markerCoordinates.lat" :lng="markerCoordinates.lng"/>
+    <AddMarkerModal :lat="markerCoordinates.lat" :lng="markerCoordinates.lng"/>
+    <LogoutModal />
+    <Alert type="success" text="Success!"/>
     <div class="main-nav">
       <RounedButton tooltip="Login" icon="mdi-login" color="light-blue darken-4" path="/login" v-if="!appLocalStorage.isUserLogged" />
       <RounedButton tooltip="Register" icon="mdi-account-plus" color="light-blue darken-4" path="/register" v-if="!appLocalStorage.isUserLogged" />
       <RounedButton tooltip="My profile" icon="mdi-account" color="light-blue darken-4" path="/my-profile" v-if="appLocalStorage.isUserLogged"/>
       <RounedButton tooltip="My markers" icon="mdi-map-marker" color="light-blue darken-4" path="/my-markers" v-if="appLocalStorage.isUserLogged"/>
-      <RounedButton tooltip="My markers" icon="mdi-map-marker" color="light-blue darken-4" path="/" action="logout" v-if="appLocalStorage.isUserLogged"/>
+      <RounedButton tooltip="Logout" icon="mdi-logout" color="light-blue darken-4" path="/" action="logout" v-if="appLocalStorage.isUserLogged"/>
     </div>
 
   </v-container>
@@ -26,14 +28,18 @@
   import { getFirestore, collection, addDoc} from "firebase/firestore";
   import axios from "axios";
   import "@firebase/firestore";
-  import Modal from './Modal'
+  import AddMarkerModal from './AddMarkerModal'
   import RounedButton from './RoundedButton.vue'
+  import LogoutModal from './LogoutModal'
+  import Alert from './Alert'
 
   export default {
     name: 'Map',
     components: {
-      Modal,
-      RounedButton
+      AddMarkerModal,
+      RounedButton,
+      LogoutModal,
+      Alert
     },
     data () {
       return {
@@ -41,7 +47,6 @@
         attribution:
             '&copy; <a target="_blank" href="http://osm.org/copyright">OpenStreetMap</a> contributors',
         zoom: 8,
-        markers: [],
         coordinates: {
             lat: 0,
             lng: 0
@@ -50,15 +55,15 @@
           lat: null,
           lng: null,
         },
-        isModalVisible: false,
-        droneModels: []
+        isMarkerModalVisible: false,
+        droneModels: [],
       };
     },
     updated() {
-      // this.isModalVisible = this.$store.getters['getMarkerModalVisible']()
+      // this.isMarkerModalVisible = this.$store.getters['getMarkerModalVisible']()
     },
     created() {
-      console.log(this.$store)
+      // console.log(this.$store)
       // console.log(this.markers)
         this.$getLocation({})
         .then(coordinates => {
@@ -70,44 +75,55 @@
         
           axios.get('https://firestore.googleapis.com/v1/projects/drone-app-1cd2e/databases/(default)/documents/coordinates')
           .then((response) => {
+            // console.log(response)
             let firestoreCoordinates = response.data.documents
             firestoreCoordinates.map(item => {
               let coordinatesArr = []
               for(let coordinate in item.fields) {
-                coordinatesArr.push(item.fields[coordinate].doubleValue)
+                if(item.fields[coordinate].doubleValue) {
+                  coordinatesArr.push(item.fields[coordinate].doubleValue)
+                }
+                
               }
               this.markers.push(coordinatesArr)
             })
 
             return response
           });
+          // console.log('przeszlo')
+          this.refreshMarkers()
     },
 
     methods: {
       refreshMarkers: function() {
           axios.get('https://firestore.googleapis.com/v1/projects/drone-app-1cd2e/databases/(default)/documents/coordinates')
           .then((response) => {
-            this.markers = [];
             let firestoreCoordinates = response.data.documents
+            let markersArr = []
+            let markersFullArr = [];
             firestoreCoordinates.map(item => {
               let coordinatesArr = []
+              markersFullArr.push(item.fields)
               for(let coordinate in item.fields) {
-                coordinatesArr.push(item.fields[coordinate].doubleValue)
+                
+                if(item.fields[coordinate].doubleValue) {
+                  coordinatesArr.push(item.fields[coordinate].doubleValue)
+                }
               }
-              this.markers.push(coordinatesArr)
+              markersArr.push(coordinatesArr)
             })
+            this.$store.commit('setMarkers', markersArr);
+            this.$store.commit('setMarkerFullInfo', markersFullArr);
           });
       },
       async setMarkerCoords(event) {
-        console.log(event)
         this.markerCoordinates.lat = event.latlng.lat
         this.markerCoordinates.lng = event.latlng.lng
-        
-        // this.$store.commit('setMarkerInfo', {
-        //   lat: event.latlng.lat,
-        //   lng: event.latlng.lng,
-        // });
-        this.isModalVisible = true;
+        this.$store.commit('setMarkerInfo', {
+          lat: event.latlng.lat,
+          lng: event.latlng.lng,
+        });
+        this.isMarkerModalVisible = true;
         this.$store.commit('setMarkerModalVisible', true);
         this.$store.getters['getMarkerModalVisible']()
         // console.log(this.$store.getters['getMarkerModalVisible']())
@@ -123,15 +139,22 @@
     computed: {
       isModalRendered: {
         get() {
-          // if(drone
-          console.log(this.droneModels)
           // return this.$store.getters['getMarkerModalVisible']()
         }
       },
       appLocalStorage: {
         get() {
-          console.log(localStorage)
-          return localStorage
+          return this.$store.getters['getAppLocalStorage']()
+        }
+      },
+      markers: {
+        get() {
+          return this.$store.getters['getMarkers']()
+        }
+      },
+      markersFullInfo: {
+        get() {
+          return this.$store.getters['getMarkersFullInfo']()
         }
       }
     },

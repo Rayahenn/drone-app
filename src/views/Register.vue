@@ -143,8 +143,7 @@ export default {
     },
     appLocalStorage: {
       get() {
-        console.log(localStorage)
-        return localStorage
+        return this.$store.getters['getAppLocalStorage']()
       }
     }
   }

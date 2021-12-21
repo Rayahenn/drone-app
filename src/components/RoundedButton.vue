@@ -21,7 +21,7 @@
                 :color="color"
                 v-bind="attrs"
                 v-on="on"
-                @click="logout()"
+                @click="openLogoutModal()"
                 v-else
                 >
                     <v-icon>
@@ -54,8 +54,8 @@ export default {
         action: null,
     },
     methods: {
-        logout() {
-            localStorage.clear()
+        openLogoutModal() {
+            this.$store.commit('setLogoutModalVisible', true);
         }
     },
     computed: {}

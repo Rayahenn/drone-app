@@ -4,6 +4,7 @@ import Home from "../views/Home.vue";
 import Login from "../views/Login.vue";
 import Register from "../views/Register.vue";
 import Secret from "../views/Secret.vue";
+import MyProfile from "../views/MyProfile.vue";
 
 // import * as firebase from "firebase/app";
 // import "firebase/auth";
@@ -30,6 +31,12 @@ const routes = [
     path: "/secret",
     name: "Secret",
     component: Secret,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: "/my-profile",
+    name: "My Profile",
+    component: MyProfile,
     meta: { requiresAuth: true }
   },
   {

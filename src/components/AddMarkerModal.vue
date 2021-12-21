@@ -7,22 +7,23 @@
   import "@firebase/firestore";
 
   export default {
-    name: 'Modal',
+    name: 'AddMarkerModal',
     data () {
       return {
-        // isModalVisible: false,
+        // isMarkerModalVisible: false,
         isSpinnerVisible: false,
         isModalRendered: false,
         droneModels: [],
         categories: [],
-        selectedDrone: '',
-        selectedCategories: ['Spring'],
+        selectedDrone: null,
+        selectedCategories: [],
         loader: null,
         isButtonLoading: false,
         valid: true,
         picture: null,
         imageData: null,
-        uploadValue: 0
+        uploadValue: 0,
+        error: false,
       }
     },
     props: {
@@ -30,7 +31,7 @@
       lng: null,
     },
     computed: {
-      isModalVisible: {
+      isMarkerModalVisible: {
         get() {
           if(!this.isModalRendered) {
             axios.get('https://firestore.googleapis.com/v1/projects/drone-app-1cd2e/databases/(default)/documents/drones')
@@ -54,8 +55,7 @@
       },
       appLocalStorage: {
         get() {
-          console.log(localStorage)
-          return localStorage
+          return this.$store.getters['getAppLocalStorage']()
         }
       }
     },
@@ -101,47 +101,63 @@
         this.uploadValue = 0;
         this.picture = null;
         this.imageData = event
-        console.log(event)
-        console.log(this.imageData)
         this.onUpload(event)
       },
         refreshMarkers: function() {
           axios.get('https://firestore.googleapis.com/v1/projects/drone-app-1cd2e/databases/(default)/documents/coordinates')
           .then((response) => {
-            this.markers = [];
             let firestoreCoordinates = response.data.documents
+            let markersArr = []
+            let markersFullArr = [];
             firestoreCoordinates.map(item => {
               let coordinatesArr = []
+              markersFullArr.push(item.fields)
               for(let coordinate in item.fields) {
-                coordinatesArr.push(item.fields[coordinate].doubleValue)
+                
+                if(item.fields[coordinate].doubleValue) {
+                  coordinatesArr.push(item.fields[coordinate].doubleValue)
+                }
               }
-              this.markers.push(coordinatesArr)
+              markersArr.push(coordinatesArr)
             })
+            this.$store.commit('setMarkers', markersArr);
+            this.$store.commit('setMarkerFullInfo', markersFullArr);
           });
       },
       async addMarker(event) {
-        console.log(this.$props)
+        let self = this;
         this.$store.commit('setMarkerInfo', {
           lat: this.$props.lat,
           lng: this.$props.lng,
         });
-        // this.isModalVisible = true;
+
+        if(!this.imageData || !this.selectedDrone || !this.selectedCategories.length) {
+          self.error = true;
+        }
+        // this.isMarkerModalVisible = true;
         // this.$store.commit('setMarkerModalVisible', true);
         // this.$store.getters['getMarkerModalVisible']()
         // console.log(this.$store.getters['getMarkerModalVisible']())
+        if(!this.error) {
         const db = getFirestore();
-        console.log(localStorage)
 
         await addDoc(collection(db, 'coordinates'), {
           0: this.$props.lat,
           1: this.$props.lng,
-          2: this.imageData.name,
-          3: localStorage.userId,
-          4: localStorage.userEmail,
+          2: this.selectedDrone,
+          3: this.imageData.name,
+          4: this.selectedCategories,
+          5: this.appLocalStorage.userId,
+          6: this.appLocalStorage.userEmail,
 
         })
         this.closeModal()
         this.refreshMarkers();
+        this.selectedDrone = null;
+        this.selectedCategories = null;
+        this.imageData = null;
+        this.error = false
+        }
       }
     }
   }
@@ -150,7 +166,7 @@
 <template>
   <div class="text-center">
     <v-dialog
-      v-model="isModalVisible"
+      v-model="isMarkerModalVisible"
       width="500"
       persistent
     >
@@ -169,6 +185,11 @@
                 cols="12"
                 md="12"
               >
+                <v-alert
+                  color="red"
+                  type="success"
+                  v-if="error"
+                >Please check all fields</v-alert>
                 <h4>Select drone type</h4>
                 <v-select
                   v-model="selectedDrone"
@@ -208,6 +229,8 @@
                     filled
                     prepend-icon="mdi-camera"
                     @change="previewImage"
+                    accept="image/png, image/jpeg, image/bmp"
+                    required
                   ></v-file-input>
               </v-col>
             </v-row>
