@@ -5,6 +5,7 @@ import Login from "../views/Login.vue";
 import Register from "../views/Register.vue";
 import Secret from "../views/Secret.vue";
 import MyProfile from "../views/MyProfile.vue";
+import Weather from "../views/Weather.vue";
 
 // import * as firebase from "firebase/app";
 // import "firebase/auth";
@@ -38,6 +39,11 @@ const routes = [
     name: "My Profile",
     component: MyProfile,
     meta: { requiresAuth: true }
+  },
+  {
+    path: "/weather",
+    name: "Weather Forecast",
+    component: Weather,
   },
   {
     path: "/about",

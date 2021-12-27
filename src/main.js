@@ -29,6 +29,7 @@ Icon.Default.mergeOptions({
 });
 
 Vue.prototype.$axios = axios;
+Vue.prototype.$weatherApiKey = '749114619e76cd7adc5518a2fbbaa416'
 Vue.component("l-map", LMap);
 Vue.component("l-tile-layer", LTileLayer);
 Vue.component("l-marker", LMarker);
@@ -46,6 +47,7 @@ const firebaseConfig = {
   appId: "1:564477671036:web:a99cc7e79ed2fc92807bf9",
   measurementId: "G-HDVM68REFV"
 };
+
 
 firebase.initializeApp(firebaseConfig);
 

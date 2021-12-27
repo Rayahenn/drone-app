@@ -25,6 +25,7 @@ export default new Vuex.Store({
     isAlertVisible: false,
     markers: [],
     markerFullInfo: [],
+    weatherApiKey: '749114619e76cd7adc5518a2fbbaa416',
   },
   mutations: {
     setMarkerModalVisible (state, val) {

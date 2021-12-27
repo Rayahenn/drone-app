@@ -1,26 +1,25 @@
 <template>
-  <v-container>
-    <!-- <v-row>
-      <v-col
-        cols="12"
-        md="12"
-      >
-      <v-card elevation="10">
-        
-      </v-card>
-      </v-col>
-    </v-row> -->
-  </v-container>
+  <div>
+    <UserInfo />
+    <UserMarkers />
+  </div>
+
+  <!-- <v-container>
+  </v-container> -->
 </template>
 
 <script>
 // import Map from '../components/Map';
+import UserInfo from '../components/UserInfo.vue';
+import UserMarkers from '../components/UserMarkers.vue';
 
 export default {
   name: "MyProfile",
 
   components: {
     // Map,
+    UserInfo,
+    UserMarkers,
   },
     data: () => ({
     //
