@@ -9,6 +9,7 @@
         <span class="weather-box__value">
             {{text}}
         </span>
+        <slot></slot>
     </v-card>
 </template>
 
@@ -41,7 +42,14 @@ export default {
 <style lang="scss" scoped>
     .weather-box {
         display: flex;
-        padding: 8px 16px;
+        padding: 24px 16px;
+        background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0px 0px 64px -31px rgba(66, 68, 90, 1) !important;
+        color: #fff;
+        border-radius: 20px;
         > * {
             + * {
                 margin-top: 8px;
@@ -49,6 +57,13 @@ export default {
         }
         &__title {
 
+        }
+        span {
+            font-size: 24px;
+        }
+        .v-icon {
+            color: #fff;
+            font-size: 72px;
         }
     }
 </style>

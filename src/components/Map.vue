@@ -68,6 +68,7 @@
         this.$getLocation({})
         .then(coordinates => {
             this.coordinates = coordinates
+            this.$store.commit('setCurrentLocation', coordinates);
         })
         .catch(error => alert(error))
 

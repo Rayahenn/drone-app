@@ -26,6 +26,7 @@ export default new Vuex.Store({
     markers: [],
     markerFullInfo: [],
     weatherApiKey: '749114619e76cd7adc5518a2fbbaa416',
+    currentLocation: null,
   },
   mutations: {
     setMarkerModalVisible (state, val) {
@@ -78,7 +79,10 @@ export default new Vuex.Store({
         localStorage.userId = val.user.uid
         localStorage.userLastLogin = val.user.metadata.lastSignInTime 
       }
-    }
+    },
+    setCurrentLocation (state, val) {
+      state.currentLocation = val;
+    },
   },
   actions: {},
   modules: {},
@@ -103,6 +107,9 @@ export default new Vuex.Store({
     },
     getMarkersFullInfo: (state) => function() {
       return state.markerFullInfo
+    },
+    getCurrentLocation: (state) => function() {
+      return state.currentLocation
     }
   },
 });
