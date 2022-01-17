@@ -2,6 +2,7 @@
   <div>
     <UserInfo />
     <UserMarkers />
+    <MainNav />
   </div>
 
   <!-- <v-container>
@@ -12,6 +13,7 @@
 // import Map from '../components/Map';
 import UserInfo from '../components/UserInfo.vue';
 import UserMarkers from '../components/UserMarkers.vue';
+import MainNav from '../components/MainNav'
 
 export default {
   name: "MyProfile",
@@ -20,8 +22,10 @@ export default {
     // Map,
     UserInfo,
     UserMarkers,
+    MainNav
   },
     data: () => ({
+      test: null,
     //
   }),
   computed: {

@@ -6,11 +6,27 @@ export default {
   name: "BarChart",
     props: {
         labels: null,
-        chardData: null,
+        chartData: null,
         options: null,
     },
     mounted () {
-        // this.renderChart(this.chartdata, this.options)
+        let self = this;
+        setTimeout(function() {
+            self.renderChart(self.chartData, self.options)
+            // console.log(self)
+        }, 500)
+        console.log(this)
+        // console.log(Bar)
+        // console.log(this)
+        // console.log(this.chartData)
+        // console.log(this.options)
+
+    },
+    watch: {
+        chartData() {
+            // console.log('jest zmiana')
+            // console.log(this)
+        }
     }
 }
 </script>

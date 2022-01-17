@@ -1,5 +1,6 @@
 <template>
     <v-container class="weather-container">
+        <MainNav />
         <div class="weather-container__header">
             <h1>Weather Forecast</h1>
             <v-text-field
@@ -21,7 +22,7 @@
                 <v-col
                     lg="4"
                 >
-                    <WeatherBox icon="mdi-map-marker" title="Location" :text="city"/>
+                    <WeatherBox icon="mdi-map-marker" title="Location" :text="locality"/>
                 </v-col>
                 <v-col
                     lg="4"
@@ -50,6 +51,7 @@
                 </v-col>
                 <v-col
                     lg="12"
+                    v-if="dates.length"
                 >
                     <WeatherBox icon="mdi-calendar-month" title="7 day temperature forecast"/>
                 </v-col>
@@ -57,7 +59,8 @@
                 <v-col
                     v-for="(day, index) in dailyTemp"
                     :key="index"
-                    lg="6"
+                    lg="4"
+                    v-if="dates.length"
                 >
                     <WeatherBox icon="mdi-calendar-month" :title="dates[index]">
                         <span v-html="'Temperature: ' + day.temp.day.toFixed(2) + '°C'"></span>
@@ -75,90 +78,100 @@
 </template>
 
 <script>
-import axios from "axios";
-import WeatherBox from '../components/WeatherBox.vue';
+    import axios from "axios";
+    import WeatherBox from '../components/WeatherBox.vue';
+    import MainNav from '../components/MainNav'
 
-export default {
-  name: "Weather",
+    export default {
+    name: "Weather",
 
-  components: {
-    WeatherBox,
-  },
-    data: () => ({
-        city: null,
-        humidity: null,
-        windSpeed: null,
-        pressure: null,
-        temperature: null,
-        cloudiness: null,
-        description: null,
-        locality: null,
-        dailyTemp: null,
-        currentLocation: null,
-        dates: [],
-  }),
-    methods: {
-        getWeather() {
-            axios.get("https://api.openweathermap.org/data/2.5/weather?q=" + this.city + "&appid=" + this.$weatherApiKey + "&units=metric&lang=en").then(response => {
-                axios.get("https://api.openweathermap.org/data/2.5/onecall?lat=" + response.data.coord.lat + "&lon=" + response.data.coord.lon +  "&appid=" + this.$weatherApiKey + "&units=metric&lang=en").then(responseSecondary => {
-                    this.dailyTemp = responseSecondary.data.daily;
-                });
-                this.city = null;
-                this.humidity = response.data.main.humidity;
-                this.windSpeed = response.data.wind.speed;
-                this.pressure = response.data.main.pressure;
-                this.temperature = response.data.main.temp.toFixed(0);
-                this.cloudiness = response.data.weather[0].main;
-                this.description = response.data.weather[0].description;
-                this.locality = response.data.name;
-            });
-        },
-        setLocalTime() {
-            this.dailyTemp.map(singleTemp => {
-                let miliseconds = singleTemp.dt * 1000
-                let date = new Date(miliseconds).toLocaleDateString('en-GB')
-                this.dates.push(date)
-            })
-        }
+    components: {
+        WeatherBox,
+        MainNav
     },
-    computed: {
-        userInfo: {
-            get() {
-                return this.$store.getters['getUserInfo']()
-            }
-        },
-
-    },
-    created() {
-        let self = this;
-        this.$getLocation({})
-        .then(coordinates => {
-            this.currentLocation = coordinates
-        })
-        .catch(error => alert(error))
-        
-        setTimeout(function() {
-            if(self.currentLocation.lat && self.currentLocation.lng) {
-                axios.get("https://api.openweathermap.org/data/2.5/weather?lat=" + self.currentLocation.lat + "&lon=" + self.currentLocation.lng + "&appid=" + self.$weatherApiKey + "&units=metric&lang=en").then(response => {
-                    axios.get("https://api.openweathermap.org/data/2.5/onecall?lat=" + self.currentLocation.lat + "&lon=" + self.currentLocation.lng +  "&appid=" + self.$weatherApiKey + "&units=metric&lang=en").then(responseSecondary => {
-                        self.dailyTemp = responseSecondary.data.daily;
-                        self.setLocalTime()
+        data: () => ({
+            city: null,
+            humidity: 0,
+            windSpeed: 0,
+            pressure: 0,
+            temperature: 0,
+            cloudiness: '---',
+            description: null,
+            locality: '---',
+            dailyTemp: 0,
+            currentLocation: null,
+            dates: [],
+    }),
+        methods: {
+            getWeather() {
+                axios.get("https://api.openweathermap.org/data/2.5/weather?q=" + this.city + "&appid=" + this.$weatherApiKey + "&units=metric&lang=en").then(response => {
+                    axios.get("https://api.openweathermap.org/data/2.5/onecall?lat=" + response.data.coord.lat + "&lon=" + response.data.coord.lon +  "&appid=" + this.$weatherApiKey + "&units=metric&lang=en").then(responseSecondary => {
+                        this.dailyTemp = responseSecondary.data.daily;
+                        this.setLocalTime();
                     });
 
-                    self.city = response.data.name;
-                    self.humidity = response.data.main.humidity;
-                    self.windSpeed = response.data.wind.speed;
-                    self.pressure = response.data.main.pressure;
-                    self.temperature = response.data.main.temp.toFixed(0);
-                    self.cloudiness = response.data.weather[0].main;
-                    self.description = response.data.weather[0].description;
-                    self.locality = response.data.name;
-                    
+                    this.city = null;
+                    this.humidity = response.data.main.humidity;
+                    this.windSpeed = response.data.wind.speed;
+                    this.pressure = response.data.main.pressure;
+                    this.temperature = response.data.main.temp.toFixed(0);
+                    this.cloudiness = response.data.weather[0].main;
+                    this.description = response.data.weather[0].description;
+                    this.locality = response.data.name;
+                });
+            },
+            setLocalTime() {
+                this.dailyTemp.map(singleTemp => {
+                    let miliseconds = singleTemp.dt * 1000
+                    let date = new Date(miliseconds).toLocaleDateString('en-GB')
+                    this.dates.push(date)
                 })
             }
-        },300)
-    }
-};
+        },
+        computed: {
+            userInfo: {
+                get() {
+                    return this.$store.getters['getUserInfo']()
+                }
+            },
+
+        },
+        created() {
+            let self = this;
+            this.$getLocation({})
+            .then(coordinates => {
+                this.currentLocation = coordinates
+            })
+            .catch(error => console.log(error))
+            
+            setTimeout(function() {
+                if(self.currentLocation) {
+                    axios.get("https://api.openweathermap.org/data/2.5/weather?lat=" + self.currentLocation.lat + "&lon=" + self.currentLocation.lng + "&appid=" + self.$weatherApiKey + "&units=metric&lang=en").then(response => {
+                        axios.get("https://api.openweathermap.org/data/2.5/onecall?lat=" + self.currentLocation.lat + "&lon=" + self.currentLocation.lng +  "&appid=" + self.$weatherApiKey + "&units=metric&lang=en").then(responseSecondary => {
+                            self.dailyTemp = responseSecondary.data.daily;
+                            self.setLocalTime()
+                            console.log(responseSecondary)
+                        });
+                        console.log(response)
+                        
+
+                        self.city = response.data.name;
+                        self.humidity = response.data.main.humidity;
+                        self.windSpeed = response.data.wind.speed;
+                        self.pressure = response.data.main.pressure;
+                        self.temperature = response.data.main.temp.toFixed(0);
+                        self.cloudiness = response.data.weather[0].main;
+                        self.description = response.data.weather[0].description;
+                        self.locality = response.data.name;
+                        
+                    })
+                }
+                else {
+
+                }
+            },300)
+        }
+    };
 </script>
 
 <style lang="scss">
@@ -168,11 +181,14 @@ export default {
     }
 }
 .weather-container {
-    display: flex;
-    align-items: center;
-    flex-direction: column;
+    // display: flex;
+    // align-items: center;
+    // flex-direction: column;
     &__header {
         margin-bottom: 32px;
+        max-width: 260px;
+        margin-left: auto;
+        margin-right: auto;
     }
 }
 </style>

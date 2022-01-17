@@ -1,6 +1,11 @@
 <template>
   <div class="auth-container">
-    <div v-if="!appLocalStorage.isUserLogged">
+    <MainNav />
+    <v-card
+      class="auth-card" 
+      v-if="!appLocalStorage.isUserLogged"
+      elevation="10"
+    >
       <div class="error" v-if="error">{{error.message}}</div>
       <v-form
         ref="form"
@@ -40,7 +45,6 @@
           </v-row>
         </v-container>
         <v-btn
-          color="primary"
           elevation="3"
           rounded
           text
@@ -50,7 +54,7 @@
         Login
         </v-btn>
       </v-form>
-    </div>
+    </v-card>
     <v-card 
       v-else
       :elevation="11"
@@ -78,9 +82,13 @@ import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import "@firebase/auth";
 require('firebase/auth');
 
+    import MainNav from '../components/MainNav'
 
 export default {
   name: "Login",
+  components: {
+    MainNav
+  },
   data() {
     return {
       email: "",
@@ -99,9 +107,6 @@ export default {
       showPassword: false,
     };
   },
-  created () {
-    console.log(localStorage)
-  },
   methods: {
     submit() {
     },
@@ -114,7 +119,6 @@ export default {
         .then((userCredential) => {
           this.$store.commit('setUserInfo', userCredential);
           this.$store.commit('setAppLocalStorage', localStorage);
-          console.log(localStorage)
           this.$router.push('/')
           this.$store.commit('setAlertVisible', true);
           setTimeout(function() {
@@ -146,15 +150,48 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .auth {
   &-container {
     display: flex;
     height: 100%;
     width: 100%;
-    // background-image: $brand-primary-gradient;
     align-items: center;
     justify-content: center;
+    .v-btn {
+      background-color: #fff;
+    }
+    .v-input {
+      color: #fff !important;
+      &__slot {
+        &::before {
+          border-color: #fff !important;
+        }
+        &::after {
+          border-color: #8ec5fc !important;
+        }
+      }
+      .v-label {
+        color: #fff !important;
+      }
+      input {
+        color: #fff;
+      }
+      button {
+        &::before {
+          color: #fff;
+        }
+      }
+      .v-counter {
+        color: #fff;
+      }
+      &:not(.error--text) {
+        .v-messages__wrapper {
+          color: #fff;
+        }
+      }
+
+    }
   }
   &-form {
     display: flex;
@@ -163,9 +200,16 @@ export default {
     .btn {
       margin-top: 16px;
     }
+
   }
   &-title {
     margin-bottom: 16px;
+    color: #fff;
+  }
+  &-card {
+    border-radius: 12px;
+    padding: 16px;
+    background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   }
 }
 

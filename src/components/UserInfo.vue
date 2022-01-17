@@ -11,10 +11,10 @@
             </v-avatar>
             <div class="user__info">
                 <span>
-                    E-mail address: {{$store.state.userInfo.email}}
+                    E-mail address: {{appLocalStorage.userEmail}}
                 </span>
                 <span>
-                    Last time logged in: {{$store.state.userInfo.lastLogin}}
+                    Last time logged in: {{appLocalStorage.userLastLogin}}
                 </span>
             </div>
         </v-card>
@@ -41,7 +41,13 @@ export default {
             this.$store.commit('setLogoutModalVisible', true);
         }
     },
-    computed: {}
+    computed: {
+        appLocalStorage: {
+            get() {
+                return this.$store.getters['getAppLocalStorage']()
+            }
+        },
+    }
 };
 </script>
 

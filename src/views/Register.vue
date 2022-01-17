@@ -1,6 +1,11 @@
 <template>
   <div class="auth-container">
-    <div v-if="!appLocalStorage.isUserLogged">
+    <MainNav />
+    <v-card
+      class="auth-card"
+      v-if="!appLocalStorage.isUserLogged"
+      elevation="10"
+      >
       <div class="error" v-if="error">{{error.message}}</div>
       <!-- <form @submit.prevent="pressed" class="auth-form">
         <h2 class="auth-title">Register a new account</h2>
@@ -64,7 +69,7 @@
         Register
         </v-btn>
       </v-form>
-    </div>
+    </v-card>
     <v-card 
       v-else
       :elevation="11"
@@ -92,8 +97,14 @@
 import * as firebase from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import "@firebase/auth";
+
+import MainNav from '../components/MainNav'
+
 require('firebase/auth');
 export default {
+  components: {
+    MainNav
+  },
   data() {
     return {
       email: "",
@@ -117,13 +128,10 @@ export default {
 
     },
     validate () {
-      console.log(this.$refs.form.validate())
       this.$refs.form.validate()
       if(this.$refs.form.validate()) {
         const auth = getAuth();
         createUserWithEmailAndPassword(auth, this.email, this.password).then(() => {
-            // this.$router.replace({ name: "/" });
-            // console.log(this.$route.query)
             this.$router.push('/')
           })
           .catch(error => {
@@ -150,27 +158,6 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-.auth {
-  &-container {
-    display: flex;
-    height: 100%;
-    width: 100%;
-    background: #fff;
-    align-items: center;
-    justify-content: center;
-  }
-  &-form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    .btn {
-      margin-top: 16px;
-    }
-  }
-  &-title {
-    margin-bottom: 16px;
-  }
-}
+<style lang="scss">
 
 </style>

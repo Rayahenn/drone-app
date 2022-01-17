@@ -55,10 +55,6 @@ const db = getFirestore();
 
 let app;
 
-// const querySnapshot = await getDocs(collection(db, "coordinates"));
-// querySnapshot.forEach((doc) => {
-//   console.log('ok');
-// });
 
 Vue.use(VueGoogleMaps, {
   load: {
@@ -67,16 +63,6 @@ Vue.use(VueGoogleMaps, {
 });
 Vue.config.productionTip = false;
 
-// firebase.auth().onAuthStateChanged(user => {
-//   console.log("user", user);
-//   if (!app) {
-//     app = new Vue({
-//       router,
-//       store,
-//       render: h => h(App)
-//     }).$mount("#app");
-//   }
-// });
 
 new Vue({
   router,

@@ -6,32 +6,50 @@
       v-if="markers.length > 0"
       v-for="(marker, index) in markers"
       :key="'marker-' + index"
-      :lat-lng="marker">
-        <l-popup>TEST</l-popup>
+      :lat-lng="marker"
+      @click="showMarkerDetails(index)">
+        <l-popup>
+          <v-progress-circular
+            indeterminate
+            color="primary"
+            v-if="isLoaderVisible"
+          >
+          </v-progress-circular>
+          <div v-else>
+            <h3>
+              Categories:
+              <span v-for="(category, categoryIndex) in markerCategories" :key="categoryIndex">
+                {{category.stringValue}}
+              </span>
+            </h3>
+            <h3>
+              Drone: 
+              <span>{{this.markersFullInfo[index].drone.stringValue}}</span>
+            </h3>
+            <img :src="imageURL" alt="">
+            
+          </div>
+        </l-popup>
       </l-marker>
     </l-map>
     <AddMarkerModal :lat="markerCoordinates.lat" :lng="markerCoordinates.lng"/>
     <LogoutModal />
     <Alert type="success" text="Success!"/>
-    <div class="main-nav">
-      <RounedButton tooltip="Login" icon="mdi-login" color="light-blue darken-4" path="/login" v-if="!appLocalStorage.isUserLogged" />
-      <RounedButton tooltip="Register" icon="mdi-account-plus" color="light-blue darken-4" path="/register" v-if="!appLocalStorage.isUserLogged" />
-      <RounedButton tooltip="My profile" icon="mdi-account" color="light-blue darken-4" path="/my-profile" v-if="appLocalStorage.isUserLogged"/>
-      <RounedButton tooltip="My markers" icon="mdi-map-marker" color="light-blue darken-4" path="/my-markers" v-if="appLocalStorage.isUserLogged"/>
-      <RounedButton tooltip="Logout" icon="mdi-logout" color="light-blue darken-4" path="/" action="logout" v-if="appLocalStorage.isUserLogged"/>
-    </div>
+    <MainNav />
 
   </v-container>
 </template>
 
 <script>
   import { getFirestore, collection, addDoc} from "firebase/firestore";
+  import { getStorage, ref, getDownloadURL  } from "firebase/storage";
   import axios from "axios";
   import "@firebase/firestore";
   import AddMarkerModal from './AddMarkerModal'
   import RounedButton from './RoundedButton.vue'
   import LogoutModal from './LogoutModal'
   import Alert from './Alert'
+  import MainNav from './MainNav'
 
   export default {
     name: 'Map',
@@ -39,7 +57,8 @@
       AddMarkerModal,
       RounedButton,
       LogoutModal,
-      Alert
+      Alert,
+      MainNav
     },
     data () {
       return {
@@ -57,41 +76,44 @@
         },
         isMarkerModalVisible: false,
         droneModels: [],
+        isLoaderVisible: true,
+        selectedMarkerImageId: null,
+        selectedMarkerImageExtension: null,
+        imageURL: null,
+        markerCategories: []
       };
     },
     updated() {
       // this.isMarkerModalVisible = this.$store.getters['getMarkerModalVisible']()
     },
     created() {
-      // console.log(this.$store)
-      // console.log(this.markers)
         this.$getLocation({})
         .then(coordinates => {
             this.coordinates = coordinates
             this.$store.commit('setCurrentLocation', coordinates);
         })
-        .catch(error => alert(error))
+        .catch(error => console.log(error))
 
 
         
           axios.get('https://firestore.googleapis.com/v1/projects/drone-app-1cd2e/databases/(default)/documents/coordinates')
           .then((response) => {
-            // console.log(response)
             let firestoreCoordinates = response.data.documents
             firestoreCoordinates.map(item => {
               let coordinatesArr = []
-              for(let coordinate in item.fields) {
-                if(item.fields[coordinate].doubleValue) {
-                  coordinatesArr.push(item.fields[coordinate].doubleValue)
-                }
-                
-              }
+                  coordinatesArr.push(item.fields.lat.doubleValue)
+                  coordinatesArr.push(item.fields.lng.doubleValue)
+              // for(let coordinate in item.fields) {
+              //   if(item.fields[coordinate].doubleValue) {
+              //     coordinatesArr.push(item.fields.lat.doubleValue)
+              //     coordinatesArr.push(item.fields.lng.doubleValue)
+              //   }
+              // }
               this.markers.push(coordinatesArr)
             })
 
             return response
           });
-          // console.log('przeszlo')
           this.refreshMarkers()
     },
 
@@ -105,12 +127,14 @@
             firestoreCoordinates.map(item => {
               let coordinatesArr = []
               markersFullArr.push(item.fields)
-              for(let coordinate in item.fields) {
+              coordinatesArr.push(item.fields.lat.doubleValue)
+              coordinatesArr.push(item.fields.lng.doubleValue)
+              // for(let coordinate in item.fields) {
                 
-                if(item.fields[coordinate].doubleValue) {
-                  coordinatesArr.push(item.fields[coordinate].doubleValue)
-                }
-              }
+              //   if(item.fields[coordinate].doubleValue) {
+              //     coordinatesArr.push(item.fields[coordinate].doubleValue)
+              //   }
+              // }
               markersArr.push(coordinatesArr)
             })
             this.$store.commit('setMarkers', markersArr);
@@ -135,6 +159,26 @@
         //   1: event.latlng.lng
         // })
         // this.refreshMarkers();
+      },
+      showMarkerDetails(index) {
+        this.markersFullInfo[index].categories.arrayValue.values.map(singleCategory => {
+          this.markerCategories.push(singleCategory.stringValue)
+        })
+        console.log(this.markersFullInfo[index])
+        console.log(index)
+        this.selectedMarkerImageId = this.markersFullInfo[index].imageId.integerValue
+        this.imageExtension = this.markersFullInfo[index].imageExtension.stringValue
+        const storage = getStorage();
+        getDownloadURL(ref(storage, 'images/'+ this.selectedMarkerImageId + '.' + this.imageExtension))
+        .then((url) => {
+          console.log(url)
+          this.imageURL = url
+          this.isLoaderVisible = false
+
+          // const img = document.getElementById('myimg');
+          // img.setAttribute('src', url);
+        })
+
       }
     },
     computed: {
