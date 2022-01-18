@@ -8,25 +8,29 @@
       :key="'marker-' + index"
       :lat-lng="marker"
       @click="showMarkerDetails(index)">
-        <l-popup>
+        <l-popup class="marker__popup">
           <v-progress-circular
             indeterminate
             color="primary"
             v-if="isLoaderVisible"
+            
           >
           </v-progress-circular>
-          <div v-else>
-            <h3>
-              Categories:
-              <span v-for="(category, categoryIndex) in markerCategories" :key="categoryIndex">
-                {{category.stringValue}}
-              </span>
-            </h3>
-            <h3>
-              Drone: 
-              <span>{{this.markersFullInfo[index].drone.stringValue}}</span>
-            </h3>
-            <img :src="imageURL" alt="">
+          <div class="marker__container" v-else>
+            <div class="marker__info">
+              <h3>
+                Categories:
+              </h3>
+              <span v-for="(category, categoryIndex) in markerCategories" :key="categoryIndex">- {{category}}</span>
+            </div>
+            <div class="marker__info">
+              <h3>
+                Drone: 
+              </h3>
+              <span>- {{markersFullInfo[index].drone.stringValue}}</span>
+            </div>
+
+            <img :src="imageURL" alt="" class="marker__photo">
             
           </div>
         </l-popup>
@@ -75,16 +79,12 @@
           lng: null,
         },
         isMarkerModalVisible: false,
-        droneModels: [],
         isLoaderVisible: true,
         selectedMarkerImageId: null,
         selectedMarkerImageExtension: null,
         imageURL: null,
         markerCategories: []
       };
-    },
-    updated() {
-      // this.isMarkerModalVisible = this.$store.getters['getMarkerModalVisible']()
     },
     created() {
         this.$getLocation({})
@@ -103,12 +103,6 @@
               let coordinatesArr = []
                   coordinatesArr.push(item.fields.lat.doubleValue)
                   coordinatesArr.push(item.fields.lng.doubleValue)
-              // for(let coordinate in item.fields) {
-              //   if(item.fields[coordinate].doubleValue) {
-              //     coordinatesArr.push(item.fields.lat.doubleValue)
-              //     coordinatesArr.push(item.fields.lng.doubleValue)
-              //   }
-              // }
               this.markers.push(coordinatesArr)
             })
 
@@ -129,12 +123,6 @@
               markersFullArr.push(item.fields)
               coordinatesArr.push(item.fields.lat.doubleValue)
               coordinatesArr.push(item.fields.lng.doubleValue)
-              // for(let coordinate in item.fields) {
-                
-              //   if(item.fields[coordinate].doubleValue) {
-              //     coordinatesArr.push(item.fields[coordinate].doubleValue)
-              //   }
-              // }
               markersArr.push(coordinatesArr)
             })
             this.$store.commit('setMarkers', markersArr);
@@ -151,42 +139,29 @@
         this.isMarkerModalVisible = true;
         this.$store.commit('setMarkerModalVisible', true);
         this.$store.getters['getMarkerModalVisible']()
-        // console.log(this.$store.getters['getMarkerModalVisible']())
-        // const db = getFirestore();
-
-        // await addDoc(collection(db, 'coordinates'), {
-        //   0: event.latlng.lat,
-        //   1: event.latlng.lng
-        // })
-        // this.refreshMarkers();
       },
       showMarkerDetails(index) {
+        this.markerCategories = []
+        this.imageURL = null
+        this.isLoaderVisible = true
+        this.selectedMarkerImageId = null
+        this.selectedMarkerImageExtension = null
         this.markersFullInfo[index].categories.arrayValue.values.map(singleCategory => {
           this.markerCategories.push(singleCategory.stringValue)
         })
-        console.log(this.markersFullInfo[index])
-        console.log(index)
+
         this.selectedMarkerImageId = this.markersFullInfo[index].imageId.integerValue
         this.imageExtension = this.markersFullInfo[index].imageExtension.stringValue
         const storage = getStorage();
         getDownloadURL(ref(storage, 'images/'+ this.selectedMarkerImageId + '.' + this.imageExtension))
         .then((url) => {
-          console.log(url)
           this.imageURL = url
           this.isLoaderVisible = false
-
-          // const img = document.getElementById('myimg');
-          // img.setAttribute('src', url);
         })
 
       }
     },
     computed: {
-      isModalRendered: {
-        get() {
-          // return this.$store.getters['getMarkerModalVisible']()
-        }
-      },
       appLocalStorage: {
         get() {
           return this.$store.getters['getAppLocalStorage']()
@@ -227,4 +202,26 @@
   height: 100%;
   z-index: 401;
 }
+
+.marker {
+  &__container {
+    display: flex;
+    flex-direction: column;
+  }
+  &__info {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 8px;
+  }
+  &__popup {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  &__photo {
+    max-width: 100%;
+  }
+}
+
+
 </style>

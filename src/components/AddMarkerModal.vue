@@ -98,7 +98,6 @@
         const imagesRef = ref(storage, 'images/' + this.imageId + '.' + this.imageExtension)
         this.picture = null;
         uploadBytes(imagesRef, file).then((snapshot) => {
-          this.imageId = Date.now()
         })
       },
       previewImage(event) {
@@ -167,6 +166,7 @@
         this.error = false
         this.imageId = null
         this.imageExtension = null
+        this.$refs.form.reset()
         }
       }
     }

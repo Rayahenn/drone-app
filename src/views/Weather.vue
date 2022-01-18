@@ -150,10 +150,7 @@
                         axios.get("https://api.openweathermap.org/data/2.5/onecall?lat=" + self.currentLocation.lat + "&lon=" + self.currentLocation.lng +  "&appid=" + self.$weatherApiKey + "&units=metric&lang=en").then(responseSecondary => {
                             self.dailyTemp = responseSecondary.data.daily;
                             self.setLocalTime()
-                            console.log(responseSecondary)
                         });
-                        console.log(response)
-                        
 
                         self.city = response.data.name;
                         self.humidity = response.data.main.humidity;

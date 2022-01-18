@@ -80,7 +80,6 @@ export default {
         //get Drone types
         await axios.get('https://firestore.googleapis.com/v1/projects/drone-app-1cd2e/databases/(default)/documents/drones')
           .then((response) => {
-            //   console.log(response)
             let drones = response.data.documents[0].fields
             Object.keys(drones).forEach(function(key) {
                 self.droneCounter.push(0)
@@ -99,11 +98,9 @@ export default {
         // get categories
         await axios.get('https://firestore.googleapis.com/v1/projects/drone-app-1cd2e/databases/(default)/documents/categories')
         .then((response) => {
-            // console.log(response)
             for(const [key,value] of Object.entries(response.data.documents[0].fields)) {
                 self.markerCategories.push(value.stringValue)
                 self.markerCategoryCounter.push(0)
-                // console.log(self.markerCategoryCounter)
             }
             self.categoriesChartData.labels = self.markerCategories
             self.categoriesChartData.datasets.push({
@@ -116,36 +113,25 @@ export default {
         // get logged user coords
         await axios.get('https://firestore.googleapis.com/v1/projects/drone-app-1cd2e/databases/(default)/documents/coordinates')
           .then((response) => {
-              console.log(response)
              let firestoreCoordinates = response.data.documents
             firestoreCoordinates.map(item => {
-              for(let coordinate in item.fields) {
-                if(item.fields.userId.stringValue == localStorage.userId) {
-                    self.droneTypes.map((singleDrone, index) => {
-                        if(item.fields.drone.stringValue == singleDrone) {
-                            self.droneCounter[index]++
-                        }
-                    })
-                    self.markerCategories.map((singleCategory, singleCategoryIndex) => {
-                        item.fields.categories.arrayValue.values.map((singleMarkerCategory, singleMarkerCategoryIndex) => {
-                            if(singleMarkerCategory.stringValue == singleCategory) {
-                                // console.log(self.markerCategoryCounter[singleCategoryIndex])
-                                self.markerCategoryCounter[singleCategoryIndex]++
+                    if(item.fields.userId.stringValue == localStorage.userId) {
+                        self.droneTypes.map((singleDrone, index) => {
+                            if(item.fields.drone.stringValue == singleDrone) {
+                                self.droneCounter[index]++
                             }
                         })
-                    })
-                }
-              }
+                        self.markerCategories.map((singleCategory, singleCategoryIndex) => {
+                            item.fields.categories.arrayValue.values.map((singleMarkerCategory, singleMarkerCategoryIndex) => {
+                                if(singleMarkerCategory.stringValue == singleCategory) {
+                                    self.markerCategoryCounter[singleCategoryIndex]++
+                                }
+                            })
+                        })
+                    }
             return response
             });
         });
-
-
-
-
-
-        console.log('beforeCreate completed')
-
     },
     computed: {
         markers: {
