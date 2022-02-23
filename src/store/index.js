@@ -6,6 +6,7 @@ Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
     isMarkerModalVisible: false,
+    isMarkerInfoModalVisible: false,
     isLogoutModalVisible: false,
     newMarkerInfo: {
       lat: 0,
@@ -83,6 +84,9 @@ export default new Vuex.Store({
     setCurrentLocation (state, val) {
       state.currentLocation = val;
     },
+    setMarkerInfoModalVisible (state, val) {
+      state.isMarkerInfoModalVisible = val;
+    },
   },
   actions: {},
   modules: {},
@@ -110,6 +114,9 @@ export default new Vuex.Store({
     },
     getCurrentLocation: (state) => function() {
       return state.currentLocation
-    }
+    },
+    getMarkerInfoModalVisible: (state) => function() {
+      return state.isMarkerInfoModalVisible;
+    },
   },
 });

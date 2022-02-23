@@ -24,8 +24,9 @@
         imageData: null,
         uploadValue: 0,
         error: false,
-        imageId: null,
-        imageExtension: null,
+        imageId: [],
+        imageExtension: [],
+        imagesNames: []
       }
     },
     props: {
@@ -90,15 +91,20 @@
           }
       },
       async onUpload(file) {
-        this.imageId = Date.now()
-        this.imageExtension = file.name.split('.')[1]
-        this.picture = null;
+        console.log('onUpload')
+        console.log(file)
+        file.map((singleFile, singleFileIndex) => {
+          this.imageId.push(Date.now())
+          this.imageExtension.push(singleFile.name.split('.')[1])
+          this.picture = null;
 
-        const storage = getStorage();
-        const imagesRef = ref(storage, 'images/' + this.imageId + '.' + this.imageExtension)
-        this.picture = null;
-        uploadBytes(imagesRef, file).then((snapshot) => {
+          const storage = getStorage();
+          const imagesRef = ref(storage, 'images/' + this.imageId[singleFileIndex] + '.' + this.imageExtension[singleFileIndex])
+          this.picture = null;
+          uploadBytes(imagesRef, singleFile).then((snapshot) => {
+          })
         })
+
       },
       previewImage(event) {
         this.uploadValue = 0;
@@ -106,28 +112,28 @@
         this.imageData = event
         this.onUpload(event)
       },
-        refreshMarkers: function() {
-          axios.get('https://firestore.googleapis.com/v1/projects/drone-app-1cd2e/databases/(default)/documents/coordinates')
-          .then((response) => {
-            let firestoreCoordinates = response.data.documents
-            let markersArr = []
-            let markersFullArr = [];
-            firestoreCoordinates.map(item => {
-              let coordinatesArr = []
-              markersFullArr.push(item.fields)
-              coordinatesArr.push(item.fields.lat.doubleValue)
-              coordinatesArr.push(item.fields.lng.doubleValue)
-              // for(let coordinate in item.fields) {
-                
-              //   if(item.fields[coordinate].doubleValue) {
-              //     coordinatesArr.push(item.fields[coordinate].doubleValue)
-              //   }
-              // }
-              markersArr.push(coordinatesArr)
-            })
-            this.$store.commit('setMarkers', markersArr);
-            this.$store.commit('setMarkerFullInfo', markersFullArr);
-          });
+      refreshMarkers: function() {
+        axios.get('https://firestore.googleapis.com/v1/projects/drone-app-1cd2e/databases/(default)/documents/coordinates')
+        .then((response) => {
+          let firestoreCoordinates = response.data.documents
+          let markersArr = []
+          let markersFullArr = [];
+          firestoreCoordinates.map(item => {
+            let coordinatesArr = []
+            markersFullArr.push(item.fields)
+            coordinatesArr.push(item.fields.lat.doubleValue)
+            coordinatesArr.push(item.fields.lng.doubleValue)
+            // for(let coordinate in item.fields) {
+              
+            //   if(item.fields[coordinate].doubleValue) {
+            //     coordinatesArr.push(item.fields[coordinate].doubleValue)
+            //   }
+            // }
+            markersArr.push(coordinatesArr)
+          })
+          this.$store.commit('setMarkers', markersArr);
+          this.$store.commit('setMarkerFullInfo', markersFullArr);
+        });
       },
       async addMarker(event) {
         let self = this;
@@ -145,12 +151,15 @@
         // console.log(this.$store.getters['getMarkerModalVisible']())
         if(!this.error) {
         const db = getFirestore();
+        this.imageData.map(singleFile => {
+          self.imagesNames.push(singleFile.name)
+        })
 
         await addDoc(collection(db, 'coordinates'), {
           'lat': this.$props.lat,
           'lng': this.$props.lng,
           'drone': this.selectedDrone,
-          'image': this.imageData.name,
+          'image': self.imagesNames,
           'categories': this.selectedCategories,
           'userId': this.appLocalStorage.userId,
           'userEmail': this.appLocalStorage.userEmail,
@@ -164,8 +173,9 @@
         this.selectedCategories = [];
         this.imageData = null;
         this.error = false
-        this.imageId = null
-        this.imageExtension = null
+        this.imageId = []
+        this.imageExtension = []
+        this.imagesNames = []
         this.$refs.form.reset()
         }
       }
@@ -241,6 +251,7 @@
                     @change="previewImage"
                     accept="image/png, image/jpeg, image/bmp"
                     required
+                    multiple
                   ></v-file-input>
               </v-col>
             </v-row>

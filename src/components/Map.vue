@@ -8,7 +8,7 @@
       :key="'marker-' + index"
       :lat-lng="marker"
       @click="showMarkerDetails(index)">
-        <l-popup class="marker__popup">
+        <!-- <l-popup class="marker__popup">
           <v-progress-circular
             indeterminate
             color="primary"
@@ -31,12 +31,21 @@
             </div>
 
             <img :src="imageURL" alt="" class="marker__photo">
-            
+            <v-btn
+              :loading="isButtonLoading"
+              color="primary"
+              class="ma-2 white--text"
+              elevation="2"
+              @click="addMarker()"
+            >
+              Show marker full info
+            </v-btn>
           </div>
-        </l-popup>
+        </l-popup> -->
       </l-marker>
     </l-map>
     <AddMarkerModal :lat="markerCoordinates.lat" :lng="markerCoordinates.lng"/>
+    <MarkerInfoModal :imageURL="imageURL" :markerCategories="markerCategories" :isLoaderVisible="isLoaderVisible" :selectedMarkerId="selectedMarkerId"/>
     <LogoutModal />
     <Alert type="success" text="Success!"/>
     <MainNav />
@@ -50,6 +59,7 @@
   import axios from "axios";
   import "@firebase/firestore";
   import AddMarkerModal from './AddMarkerModal'
+  import MarkerInfoModal from './MarkerInfoModal'
   import RounedButton from './RoundedButton.vue'
   import LogoutModal from './LogoutModal'
   import Alert from './Alert'
@@ -62,7 +72,8 @@
       RounedButton,
       LogoutModal,
       Alert,
-      MainNav
+      MainNav,
+      MarkerInfoModal
     },
     data () {
       return {
@@ -79,11 +90,13 @@
           lng: null,
         },
         isMarkerModalVisible: false,
+        isMarkerInfoModalVisible: false,
         isLoaderVisible: true,
         selectedMarkerImageId: null,
-        selectedMarkerImageExtension: null,
-        imageURL: null,
-        markerCategories: []
+        selectedMarkerImageExtension: [],
+        imageURL: [],
+        markerCategories: [],
+        selectedMarkerId: null,
       };
     },
     created() {
@@ -93,9 +106,6 @@
             this.$store.commit('setCurrentLocation', coordinates);
         })
         .catch(error => console.log(error))
-
-
-        
           axios.get('https://firestore.googleapis.com/v1/projects/drone-app-1cd2e/databases/(default)/documents/coordinates')
           .then((response) => {
             let firestoreCoordinates = response.data.documents
@@ -141,24 +151,49 @@
         this.$store.getters['getMarkerModalVisible']()
       },
       showMarkerDetails(index) {
+        let self = this
+        this.selectedMarkerId = index
+        this.$store.commit('setMarkerInfoModalVisible', true);
         this.markerCategories = []
-        this.imageURL = null
+        this.imageURL = []
         this.isLoaderVisible = true
-        this.selectedMarkerImageId = null
-        this.selectedMarkerImageExtension = null
+        this.selectedMarkerImageId = []
+        this.selectedMarkerImageExtension = []
         this.markersFullInfo[index].categories.arrayValue.values.map(singleCategory => {
-          this.markerCategories.push(singleCategory.stringValue)
+          self.markerCategories.push(singleCategory.stringValue)
+        })
+        this.markersFullInfo[index].imageId.arrayValue.values.map(singleImageId => {
+          self.selectedMarkerImageId.push(singleImageId.integerValue)
         })
 
-        this.selectedMarkerImageId = this.markersFullInfo[index].imageId.integerValue
-        this.imageExtension = this.markersFullInfo[index].imageExtension.stringValue
+        this.markersFullInfo[index].imageExtension.arrayValue.values.map(singleImageExtension => {
+          self.selectedMarkerImageExtension.push(singleImageExtension.stringValue)
+        })
+
+
+        
+        // this.selectedMarkerImageId = this.markersFullInfo[index].imageId.integerValue
+        // this.imageExtension = this.markersFullInfo[index].imageExtension.stringValue
         const storage = getStorage();
-        getDownloadURL(ref(storage, 'images/'+ this.selectedMarkerImageId + '.' + this.imageExtension))
-        .then((url) => {
-          this.imageURL = url
-          this.isLoaderVisible = false
+        console.log('dfigjidjfgijd')
+        console.log(index)
+        this.markersFullInfo[index].imageExtension.arrayValue.values.map((singleImageExtension, singleImageExtensionIndex) => {
+          console.log(self.selectedMarkerImageId)
+          console.log(singleImageExtensionIndex)
+          console.log(self.selectedMarkerImageId[singleImageExtensionIndex])
+          getDownloadURL(ref(storage, 'images/'+ self.selectedMarkerImageId[singleImageExtensionIndex] + '.' + self.selectedMarkerImageExtension[singleImageExtensionIndex]))
+          .then((url) => {
+            console.log(url)
+            self.imageURL.push(url)
+            self.isLoaderVisible = false
+          })
         })
 
+        // getDownloadURL(ref(storage, 'images/'+ this.selectedMarkerImageId + '.' + this.imageExtension))
+        // .then((url) => {
+        //   this.imageURL.push(url) = url
+        //   this.isLoaderVisible = false
+        // })
       }
     },
     computed: {
@@ -202,26 +237,5 @@
   height: 100%;
   z-index: 401;
 }
-
-.marker {
-  &__container {
-    display: flex;
-    flex-direction: column;
-  }
-  &__info {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 8px;
-  }
-  &__popup {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  &__photo {
-    max-width: 100%;
-  }
-}
-
 
 </style>
