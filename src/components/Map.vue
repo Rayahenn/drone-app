@@ -3,45 +3,11 @@
     <l-map class="map" :zoom="zoom" :center="coordinates" @click="setMarkerCoords">
       <l-tile-layer :url="url" :attribution="attribution"></l-tile-layer>
       <l-marker
-      v-if="markers.length > 0"
-      v-for="(marker, index) in markers"
-      :key="'marker-' + index"
-      :lat-lng="marker"
-      @click="showMarkerDetails(index)">
-        <!-- <l-popup class="marker__popup">
-          <v-progress-circular
-            indeterminate
-            color="primary"
-            v-if="isLoaderVisible"
-            
-          >
-          </v-progress-circular>
-          <div class="marker__container" v-else>
-            <div class="marker__info">
-              <h3>
-                Categories:
-              </h3>
-              <span v-for="(category, categoryIndex) in markerCategories" :key="categoryIndex">- {{category}}</span>
-            </div>
-            <div class="marker__info">
-              <h3>
-                Drone: 
-              </h3>
-              <span>- {{markersFullInfo[index].drone.stringValue}}</span>
-            </div>
-
-            <img :src="imageURL" alt="" class="marker__photo">
-            <v-btn
-              :loading="isButtonLoading"
-              color="primary"
-              class="ma-2 white--text"
-              elevation="2"
-              @click="addMarker()"
-            >
-              Show marker full info
-            </v-btn>
-          </div>
-        </l-popup> -->
+        v-if="markers.length > 0"
+        v-for="(marker, index) in markers"
+        :key="'marker-' + index"
+        :lat-lng="marker"
+        @click="showMarkerDetails(index)">
       </l-marker>
     </l-map>
     <AddMarkerModal :lat="markerCoordinates.lat" :lng="markerCoordinates.lng"/>
@@ -169,31 +135,14 @@
         this.markersFullInfo[index].imageExtension.arrayValue.values.map(singleImageExtension => {
           self.selectedMarkerImageExtension.push(singleImageExtension.stringValue)
         })
-
-
-        
-        // this.selectedMarkerImageId = this.markersFullInfo[index].imageId.integerValue
-        // this.imageExtension = this.markersFullInfo[index].imageExtension.stringValue
         const storage = getStorage();
-        console.log('dfigjidjfgijd')
-        console.log(index)
         this.markersFullInfo[index].imageExtension.arrayValue.values.map((singleImageExtension, singleImageExtensionIndex) => {
-          console.log(self.selectedMarkerImageId)
-          console.log(singleImageExtensionIndex)
-          console.log(self.selectedMarkerImageId[singleImageExtensionIndex])
           getDownloadURL(ref(storage, 'images/'+ self.selectedMarkerImageId[singleImageExtensionIndex] + '.' + self.selectedMarkerImageExtension[singleImageExtensionIndex]))
           .then((url) => {
-            console.log(url)
             self.imageURL.push(url)
             self.isLoaderVisible = false
           })
         })
-
-        // getDownloadURL(ref(storage, 'images/'+ this.selectedMarkerImageId + '.' + this.imageExtension))
-        // .then((url) => {
-        //   this.imageURL.push(url) = url
-        //   this.isLoaderVisible = false
-        // })
       }
     },
     computed: {

@@ -22,11 +22,11 @@
         valid: true,
         picture: null,
         imageData: null,
-        uploadValue: 0,
         error: false,
         imageId: [],
         imageExtension: [],
-        imagesNames: []
+        imagesNames: [],
+        isLoaderVisible: false,
       }
     },
     props: {
@@ -91,10 +91,11 @@
           }
       },
       async onUpload(file) {
-        console.log('onUpload')
-        console.log(file)
+        const db = getFirestore();
+        let self = this;
+        let uploadedFileCounter = 0;
         file.map((singleFile, singleFileIndex) => {
-          this.imageId.push(Date.now())
+          this.imageId.push(Date.now() + 1)
           this.imageExtension.push(singleFile.name.split('.')[1])
           this.picture = null;
 
@@ -102,15 +103,39 @@
           const imagesRef = ref(storage, 'images/' + this.imageId[singleFileIndex] + '.' + this.imageExtension[singleFileIndex])
           this.picture = null;
           uploadBytes(imagesRef, singleFile).then((snapshot) => {
+            uploadedFileCounter++
+            if(uploadedFileCounter == self.imageData.length) {
+              self.refreshMarkers();
+              addDoc(collection(db, 'coordinates'), {
+                'lat': this.$props.lat,
+                'lng': this.$props.lng,
+                'drone': this.selectedDrone,
+                'image': self.imagesNames,
+                'categories': this.selectedCategories,
+                'userId': this.appLocalStorage.userId,
+                'userEmail': this.appLocalStorage.userEmail,
+                'imageId': this.imageId,
+                'imageExtension': this.imageExtension
+              })
+              self.isLoaderVisible = false;
+              self.closeModal()
+              
+              self.selectedDrone = null;
+              self.selectedCategories = [];
+              self.imageData = null;
+              self.error = false
+              self.imageId = []
+              self.imageExtension = []
+              self.imagesNames = []
+              self.$refs.form.reset()
+            }
           })
         })
-
       },
       previewImage(event) {
-        this.uploadValue = 0;
         this.picture = null;
         this.imageData = event
-        this.onUpload(event)
+        // this.onUpload(event)
       },
       refreshMarkers: function() {
         axios.get('https://firestore.googleapis.com/v1/projects/drone-app-1cd2e/databases/(default)/documents/coordinates')
@@ -123,12 +148,6 @@
             markersFullArr.push(item.fields)
             coordinatesArr.push(item.fields.lat.doubleValue)
             coordinatesArr.push(item.fields.lng.doubleValue)
-            // for(let coordinate in item.fields) {
-              
-            //   if(item.fields[coordinate].doubleValue) {
-            //     coordinatesArr.push(item.fields[coordinate].doubleValue)
-            //   }
-            // }
             markersArr.push(coordinatesArr)
           })
           this.$store.commit('setMarkers', markersArr);
@@ -136,47 +155,25 @@
         });
       },
       async addMarker(event) {
+        this.isLoaderVisible = true
         let self = this;
         this.$store.commit('setMarkerInfo', {
           lat: this.$props.lat,
           lng: this.$props.lng,
         });
 
+        
+
         if(!this.imageData || !this.selectedDrone || !this.selectedCategories.length) {
           self.error = true;
         }
-        // this.isMarkerModalVisible = true;
-        // this.$store.commit('setMarkerModalVisible', true);
-        // this.$store.getters['getMarkerModalVisible']()
-        // console.log(this.$store.getters['getMarkerModalVisible']())
         if(!this.error) {
-        const db = getFirestore();
+
         this.imageData.map(singleFile => {
           self.imagesNames.push(singleFile.name)
         })
 
-        await addDoc(collection(db, 'coordinates'), {
-          'lat': this.$props.lat,
-          'lng': this.$props.lng,
-          'drone': this.selectedDrone,
-          'image': self.imagesNames,
-          'categories': this.selectedCategories,
-          'userId': this.appLocalStorage.userId,
-          'userEmail': this.appLocalStorage.userEmail,
-          'imageId': this.imageId,
-          'imageExtension': this.imageExtension
-
-        })
-        this.closeModal()
-        this.refreshMarkers();
-        this.selectedDrone = null;
-        this.selectedCategories = [];
-        this.imageData = null;
-        this.error = false
-        this.imageId = []
-        this.imageExtension = []
-        this.imagesNames = []
-        this.$refs.form.reset()
+        this.onUpload(this.imageData)
         }
       }
     }
@@ -191,6 +188,15 @@
       persistent
     >
       <v-card v-if="appLocalStorage.isUserLogged">
+        <div class="loader-container" v-if="isLoaderVisible">
+          <v-progress-circular
+            indeterminate
+            color="primary"
+          >
+          </v-progress-circular>
+          <span>Uploading photos...</span>
+        </div>
+
         <v-card-title class="text-h5 grey lighten-2">
           Add New Marker
         </v-card-title>
@@ -314,4 +320,19 @@
 </template>
 
 <style lang="scss" scoped>
+  .loader-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+    backdrop-filter: blur(2px);
+    background-color: #00000014;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    span {
+      margin-top: 8px
+    }
+  }
 </style>

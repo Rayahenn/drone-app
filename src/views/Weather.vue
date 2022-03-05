@@ -18,6 +18,15 @@
             </v-btn>
         </div>
         <div class="weather-container__content">
+            <v-alert
+                transition="slide-x-transition"
+                :type="error"
+                color="red"
+                v-if="isErrorVisible"
+                elevation="9"
+                class="weather-alert"
+                >{{errorMessage}}
+            </v-alert>
             <v-row>
                 <v-col
                     lg="4"
@@ -101,14 +110,18 @@
             dailyTemp: 0,
             currentLocation: null,
             dates: [],
+            errorMessage: '',
+            isErrorVisible: false,
     }),
         methods: {
             getWeather() {
+                this.errorMessage = ''
                 axios.get("https://api.openweathermap.org/data/2.5/weather?q=" + this.city + "&appid=" + this.$weatherApiKey + "&units=metric&lang=en").then(response => {
                     axios.get("https://api.openweathermap.org/data/2.5/onecall?lat=" + response.data.coord.lat + "&lon=" + response.data.coord.lon +  "&appid=" + this.$weatherApiKey + "&units=metric&lang=en").then(responseSecondary => {
                         this.dailyTemp = responseSecondary.data.daily;
                         this.setLocalTime();
                     });
+                    this.isErrorVisible = false
 
                     this.city = null;
                     this.humidity = response.data.main.humidity;
@@ -118,6 +131,22 @@
                     this.cloudiness = response.data.weather[0].main;
                     this.description = response.data.weather[0].description;
                     this.locality = response.data.name;
+                    if(this.windSpeed > 20) {
+                        this.isErrorVisible = true
+                        this.errorMessage += 'Strong wind warning! '
+                    }
+                    if(this.temperature > 40) {
+                        this.isErrorVisible = true
+                        this.errorMessage += 'Temperature too high! '
+                    }
+                    if(parseInt(this.temperature) < 0) {
+                        this.isErrorVisible = true
+                        this.errorMessage += 'Temperature too low! '
+                    }
+                    if(this.cloudiness == 'Snow' || this.cloudiness == 'Rain') {
+                        this.isErrorVisible = true
+                        this.errorMessage += 'Bad weather!'
+                    }
                 });
             },
             setLocalTime() {
@@ -160,7 +189,22 @@
                         self.cloudiness = response.data.weather[0].main;
                         self.description = response.data.weather[0].description;
                         self.locality = response.data.name;
-                        
+                        if(self.windSpeed > 20) {
+                            self.isErrorVisible = true
+                            self.errorMessage += 'Strong wind warning! '
+                        }
+                        if(self.temperature > 40) {
+                            self.isErrorVisible = true
+                            self.errorMessage += 'Temperature too high! '
+                        }
+                        if(parseInt(self.temperature) < 0) {
+                            self.isErrorVisible = true
+                            self.errorMessage += 'Temperature too low! '
+                        }
+                        if(self.cloudiness == 'Snow' || self.cloudiness == 'Rain') {
+                            self.isErrorVisible = self
+                            self.errorMessage += 'Bad weather!'
+                        }
                     })
                 }
                 else {
@@ -187,5 +231,8 @@
         margin-left: auto;
         margin-right: auto;
     }
+}
+.weather-alert {
+    color: #fff !important;
 }
 </style>

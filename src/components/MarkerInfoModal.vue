@@ -64,8 +64,9 @@
         width="500"
         persistent
         >
-            <v-card v-if="appLocalStorage.isUserLogged">
-                <v-card-title class="text-h5 grey lighten-2">
+            <v-card>
+                <v-card-title class="text-h5 greyou
+                y lighten-2">
                 Marker info
                 </v-card-title>
                 <v-progress-circular
