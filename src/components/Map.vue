@@ -63,6 +63,7 @@
         imageURL: [],
         markerCategories: [],
         selectedMarkerId: null,
+        requestURL: 'https://firestore.googleapis.com/v1/projects/drone-app-1cd2e/databases/(default)/documents/coordinates'
       };
     },
     created() {
@@ -72,7 +73,7 @@
             this.$store.commit('setCurrentLocation', coordinates);
         })
         .catch(error => console.log(error))
-          axios.get('https://firestore.googleapis.com/v1/projects/drone-app-1cd2e/databases/(default)/documents/coordinates')
+          axios.get(this.requestURL)
           .then((response) => {
             let firestoreCoordinates = response.data.documents
             firestoreCoordinates.map(item => {
@@ -89,21 +90,21 @@
 
     methods: {
       refreshMarkers: function() {
-          axios.get('https://firestore.googleapis.com/v1/projects/drone-app-1cd2e/databases/(default)/documents/coordinates')
-          .then((response) => {
-            let firestoreCoordinates = response.data.documents
-            let markersArr = []
-            let markersFullArr = [];
-            firestoreCoordinates.map(item => {
-              let coordinatesArr = []
-              markersFullArr.push(item.fields)
-              coordinatesArr.push(item.fields.lat.doubleValue)
-              coordinatesArr.push(item.fields.lng.doubleValue)
-              markersArr.push(coordinatesArr)
-            })
-            this.$store.commit('setMarkers', markersArr);
-            this.$store.commit('setMarkerFullInfo', markersFullArr);
-          });
+        axios.get(this.requestURL)
+        .then((response) => {
+          let firestoreCoordinates = response.data.documents
+          let markersArr = []
+          let markersFullArr = [];
+          firestoreCoordinates.map(item => {
+            let coordinatesArr = []
+            markersFullArr.push(item.fields)
+            coordinatesArr.push(item.fields.lat.doubleValue)
+            coordinatesArr.push(item.fields.lng.doubleValue)
+            markersArr.push(coordinatesArr)
+          })
+          this.$store.commit('setMarkers', markersArr);
+          this.$store.commit('setMarkerFullInfo', markersFullArr);
+        });
       },
       async setMarkerCoords(event) {
         this.markerCoordinates.lat = event.latlng.lat

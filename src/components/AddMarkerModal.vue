@@ -94,8 +94,10 @@
         const db = getFirestore();
         let self = this;
         let uploadedFileCounter = 0;
+        let fileCounter = 0;
         file.map((singleFile, singleFileIndex) => {
-          this.imageId.push(Date.now() + 1)
+          this.imageId.push(Date.now() + fileCounter)
+          fileCounter++
           this.imageExtension.push(singleFile.name.split('.')[1])
           this.picture = null;
 
@@ -105,7 +107,7 @@
           uploadBytes(imagesRef, singleFile).then((snapshot) => {
             uploadedFileCounter++
             if(uploadedFileCounter == self.imageData.length) {
-              self.refreshMarkers();
+
               addDoc(collection(db, 'coordinates'), {
                 'lat': this.$props.lat,
                 'lng': this.$props.lng,
@@ -119,7 +121,6 @@
               })
               self.isLoaderVisible = false;
               self.closeModal()
-              
               self.selectedDrone = null;
               self.selectedCategories = [];
               self.imageData = null;
@@ -128,6 +129,7 @@
               self.imageExtension = []
               self.imagesNames = []
               self.$refs.form.reset()
+              self.refreshMarkers();
             }
           })
         })

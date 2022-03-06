@@ -33,7 +33,7 @@
             <v-text-field
               v-model="password"
               :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-              :rules="[passwordRules.required, passwordRules.min]"
+              :rules="[passwordRules.required]"
               :type="showPassword ? 'text' : 'password'"
               name="input-10-1"
               label="Password"
@@ -81,8 +81,7 @@
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import "@firebase/auth";
 require('firebase/auth');
-
-    import MainNav from '../components/MainNav'
+import MainNav from '../components/MainNav'
 
 export default {
   name: "Login",
@@ -101,8 +100,6 @@ export default {
       ],
       passwordRules: {
         required: value => !!value || 'Required.',
-        min: v => v.length >= 8 || 'Min 8 characters',
-        emailMatch: () => (`The email and password you entered don't match`),
       },
       showPassword: false,
     };
