@@ -117,7 +117,12 @@
             getWeather() {
                 this.errorMessage = ''
                 axios.get("https://api.openweathermap.org/data/2.5/weather?q=" + this.city + "&appid=" + this.$weatherApiKey + "&units=metric&lang=en").then(response => {
-                    axios.get("https://api.openweathermap.org/data/2.5/onecall?lat=" + response.data.coord.lat + "&lon=" + response.data.coord.lon +  "&appid=" + this.$weatherApiKey + "&units=metric&lang=en").then(responseSecondary => {
+                    axios.get("https://api.openweathermap.org/data/2.5/onecall?lat=" + 
+                    response.data.coord.lat + "&lon=" + 
+                    response.data.coord.lon +  "&appid=" + 
+                    this.$weatherApiKey + 
+                    "&units=metric&lang=en")
+                    .then(responseSecondary => {
                         this.dailyTemp = responseSecondary.data.daily;
                         this.setLocalTime();
                     });
