@@ -69,13 +69,14 @@
                 y lighten-2">
                 Marker info
                 </v-card-title>
-                <v-progress-circular
-                    indeterminate
-                    color="primary"
-                    v-if="isLoaderVisible"
-                    
-                >
-                </v-progress-circular>
+                <div class="marker__loader" v-if="isLoaderVisible">
+                  <v-progress-circular
+                      indeterminate
+                      color="primary"
+                  >
+                  </v-progress-circular>
+                </div>
+
                 <div class="marker__container" v-else>
                     <div class="marker__info">
                     <h3>
@@ -129,5 +130,13 @@
     max-width: 100%;
     margin-top: 16px;
   }
+  &__loader {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 0;
+  }
 }
+
 </style>
