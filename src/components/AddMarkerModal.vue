@@ -130,22 +130,24 @@
               self.imagesNames = []
               
               self.$refs.form.reset()
+              setTimeout(function() {
+                axios.get('https://firestore.googleapis.com/v1/projects/drone-app-1cd2e/databases/(default)/documents/coordinates')
+                .then((response) => {
+                  let firestoreCoordinates = response.data.documents
+                  let markersArr = []
+                  let markersFullArr = [];
+                  firestoreCoordinates.map(item => {
+                    let coordinatesArr = []
+                    markersFullArr.push(item.fields)
+                    coordinatesArr.push(item.fields.lat.doubleValue)
+                    coordinatesArr.push(item.fields.lng.doubleValue)
+                    markersArr.push(coordinatesArr)
+                  })
+                  self.$store.commit('setMarkers', markersArr);
+                  self.$store.commit('setMarkerFullInfo', markersFullArr);
+                });
+              }, 500)
 
-              axios.get('https://firestore.googleapis.com/v1/projects/drone-app-1cd2e/databases/(default)/documents/coordinates')
-              .then((response) => {
-                let firestoreCoordinates = response.data.documents
-                let markersArr = []
-                let markersFullArr = [];
-                firestoreCoordinates.map(item => {
-                  let coordinatesArr = []
-                  markersFullArr.push(item.fields)
-                  coordinatesArr.push(item.fields.lat.doubleValue)
-                  coordinatesArr.push(item.fields.lng.doubleValue)
-                  markersArr.push(coordinatesArr)
-                })
-                self.$store.commit('setMarkers', markersArr);
-                self.$store.commit('setMarkerFullInfo', markersFullArr);
-              });
 
             }
           })
